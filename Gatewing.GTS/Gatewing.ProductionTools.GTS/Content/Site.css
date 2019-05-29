@@ -1,0 +1,234 @@
+﻿/*body, md-card.md-default-theme, md-card{
+    color: #666 !important;
+}*/
+
+/*a{
+    color: #999;
+}
+
+a:hover{
+    color: orangered;
+}
+
+a:hover svg {
+    fill: orangered !important;
+}
+
+a svg {
+    fill: #999;
+    cursor: pointer;
+}*/
+
+@font-face {
+    font-family: 'Armata';
+    src: url('/Content/Armata-Regular.otf') format("opentype");
+}
+
+body {
+    font-family: Armata;
+    font-size: 1.5em;
+    color: #999;
+}
+
+md-bottom-sheet {
+padding: 0px;
+bottom: 80px;
+overflow: hidden;
+}
+
+div {
+    outline: 0;
+}
+
+a {
+    color: #999;
+}
+
+a:hover {
+    color: #ff9900;
+
+}
+/*
+
+
+a:visited {
+    color: #666;
+}
+
+
+*/
+
+.configContainer {
+    padding: 15px;
+    border-radius: 5px;
+    margin-right: 20px;
+    color: white;
+    min-width: 75px;
+    text-align: center;
+}
+
+.tinyConfigContainer {
+    border-radius: 5px;
+    height: 20px;
+    width: 20px;
+}
+
+md-card.md-default-theme, md-card, md-content {
+    color: #999;
+}
+
+.orangeButton {
+    fill: #c7672c;
+    background-color: #c7672c !important;
+}
+
+.greyButton {
+    fill: #999;
+    background-color: #999 !important;
+}
+
+    .greyButton:hover {
+        fill: orangered;
+        background-color: orangered !important;
+    }
+
+.icon-orange {
+    fill: #c7672c !important;
+}
+
+.icon-lightGray {
+    fill: #ddd !important;
+}
+
+.infoContainer {
+    font-size: 0.9em;
+    margin: 40px 0px 20px;
+    color: #013972;
+    background-color: rgba(156, 204, 101, 1);
+    padding: 20px;
+}
+
+.errorContainer {
+    font-size: 0.9em;
+    margin: 40px 0px 20px;
+    color: #9f0000;
+    background-color: rgba(255, 154, 102, 1);
+    padding: 20px;
+}
+
+#popupContainer {
+    z-index: 99999;
+}
+
+label.textLabel {
+    font-size: 0.7em;
+    color: #333;
+    font-weight: bold;
+}
+
+.dragIcon {
+    fill: rgba(0,0,0,0) !important;
+}
+
+md-card-actions:hover .dragIcon {
+    fill: #999 !important;
+    cursor: all-scroll;
+}
+
+#scanInputStatusDisplay {
+    background-color: rgba(0,0,0,0.9);
+    border: 1px solid orangered;
+    position: absolute;
+    width: 800px;
+    height: 450px;
+    z-index: 15;
+    top: 50%;
+    left: 50%;
+    margin: -225px 0 0 -400px;
+}
+
+md-dialog {
+    max-height: 90% !important;
+    min-width: 30% !important;
+}
+
+.dragging {
+    opacity: 0.3;
+}
+
+.dropping-below {
+    border-bottom: 5px solid rgb(255,87,34);
+}
+
+.dropping-above {
+    border-top: 5px solid rgb(255,87,34);
+}
+
+.noteContainer {
+    background-color: #ffffcc;
+    border-left: 6px solid #ffeb3b;
+}
+
+    .noteContainer p {
+        padding: 10px;
+    }
+
+th.report {
+    text-align: left;
+    font-weight: bold;
+    background-color: #999;
+    color: #eee;
+    padding: 5px;
+}
+
+.reportButtonStyle01 {
+    background: linear-gradient(135deg, orange, orange 60%, orangered);
+    color: #eee;
+    height: 100px;
+}
+
+.reportButtonStyle02 {
+    background: linear-gradient(135deg, #ffe600, #ffe600 60%, orange);
+    color: #333;
+    height: 100px;
+}
+
+.reportButtonStyle03 {
+    background: linear-gradient(135deg, #ff6600, #ff6600 60%, orange);
+    color: #eee;
+    height: 100px;
+}
+
+@media print {
+    md-sidenav, .md-fab {
+        display: none !important;
+    }
+
+    md-content {
+        overflow: visible;
+    }
+
+    .print-full {
+        page-break-inside: avoid;
+    }
+}
+
+.chip {
+    cursor: default;
+    font-size: 8px;
+    float: left;
+    color: white;
+    border-radius: 16px;
+    display: block;
+    height: 24px;
+    line-height: 24px;
+    margin: 8px 8px 0 0;
+    padding: 0 12px;
+    box-sizing: border-box;
+    position: relative;
+    background-color: green;
+}
+
+.inActiveChip {
+    background-color: grey;
+}

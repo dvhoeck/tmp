@@ -1,0 +1,356 @@
+﻿@{
+    ViewBag.Title = "Manage user roles";
+}
+
+<div ng-app="GTS" ng-controller="RoleCtrl" data-ng-init="init();">
+    <note msg="'To add / remove a user to / from the list of Administrators, click the icon to the left of the user name.'"></note>
+    <md-card>
+        <md-card-content layout="row" layout-xs="column">
+            <md-input-container flex-gt-xs>
+                <label>Filter</label>
+                <input type="text" ng-model="search" id="filterField" focus-me="true">
+            </md-input-container>
+            <span flex="5" hide-xs></span>
+            <div layout="column" layout-align="center end">
+                <div layout="row" layout-align="center center">
+                    <ng-md-icon icon="person_outline"></ng-md-icon>
+                    <span class="md-subhead"> = Regular users</span>
+                </div>
+                <div layout="row" layout-align="center center">
+                    <ng-md-icon icon="person"></ng-md-icon>
+                    <span class="md-subhead"> = Administrators</span>
+                </div>
+            </div>
+        </md-card-content>
+    </md-card>
+    <div dvh-pagination data="users"></div>
+    <loading></loading>
+    <div ng-repeat="user in filtered | startFrom:(currentPage-1)*entryLimit | limitTo:entryLimit track by user.Id" flex layout="column" class="@Constants.Strings.AnimationClasses">
+        <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row">
+            <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                <a href="#" ng-hide="{{user.IsAdmin}}" ng-click="makeAdmin(user.Id)" ng-disabled="isSaving">
+                    <ng-md-icon ng-hide="{{user.IsAdmin}}" icon="person_outline"></ng-md-icon>
+                    <md-tooltip>Add user to Administrators group</md-tooltip>
+                </a>
+                <a href="#" ng-show="{{user.IsAdmin}}" ng-click="removeAdmin(user.Id)" ng-disabled="isSaving">
+                    <ng-md-icon ng-show="{{user.IsAdmin}}" icon="person"></ng-md-icon>
+                    <md-tooltip>Remove user from Administrators group</md-tooltip>
+                </a>
+            </md-card-actions>
+            <md-card-content layout="row" layout-align="start center" flex>
+                <span class="md-headline" hide-xs>{{user.Name}}</span>
+                <span class="md-caption" md-truncate hide-gt-xs>{{user.Name}}</span>
+            </md-card-content>
+            <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                <md-menu md-position-mode="target-right target">
+                    <a ng-click="$mdMenu.open($event)" style="cursor: pointer;">
+                        <ng-md-icon icon="more_vert" aria-label="More..."></ng-md-icon>
+                        <md-tooltip md-direction="top">Show more actions...</md-tooltip>
+                    </a>
+                    <md-menu-content width="3">
+                        <md-menu-item>
+                            <md-button class="md-secondary" ng-click="archiveUser(user.Id);" ng-disabled="isSaving">
+                                <div layout="row" layout-align="start center">
+                                    <div>
+                                        <md-icon md-font-set="fa fa-fw fa-archive" class="md-toggle-icon"></md-icon>
+                                    </div>
+                                    <div>&nbsp;Archive user</div>
+                                </div>
+                            </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </md-card-actions>
+        </md-card>
+    </div>
+    <div dvh-pagination data="users"></div>
+    <md-button ng-click="showAddUser($event)" class="md-fab md-fab-bottom-right docs-scroll-fab md-button md-ink-ripple scrolling" aria-label="New User" style="position:fixed !important;" ng-disabled="isSaving">
+        <md-tooltip md-direction="top">Add a new user...</md-tooltip>
+        <ng-md-icon icon="add"></ng-md-icon>
+    </md-button>
+</div>
+
+<script type="text/ng-template" id="addUser-template.html">
+    <md-dialog aria-label="Login" flex="25" flex-xs="90" ng-cloak>
+        <form name="loginForm">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Add user</h2>
+                    <span flex></span>
+                    <md-button ng-click="answer('cancel')" class="md-icon-button">
+                        <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+
+            <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                <div flex>
+                    <ul id="dialogErrorList">
+                        <md-item ng-repeat="error in dialogActionResult">
+                            <li>{{error}}</li>
+                        </md-item>
+                    </ul>
+                </div>
+
+                <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                    <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                </md-button>
+            </div>
+
+            <md-dialog-content>
+                <div class="md-dialog-content md-padding">
+                    <label>{{addUserResult}}</label>
+                </div>
+            </md-dialog-content>
+
+            <md-dialog-content>
+                <div class="md-dialog-content md-padding" style="padding: 20px;">
+                    <md-input-container class="md-block">
+                        <label>Name</label>
+                        <input name="username" ng-model="credentials.username" md-autofocus required />
+                    </md-input-container>
+                    <md-input-container class="md-block">
+                        <label>Password</label>
+                        <input type="password" name="password" ng-model="credentials.password" required />
+                    </md-input-container>
+                </div>
+            </md-dialog-content>
+            <md-dialog-actions layout="row" class="md-padding">
+                <span flex></span>
+                <md-button ng-click="answer('cancel')">
+                    Cancel
+                </md-button>
+                <md-button ng-click="save()" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="loginForm.$invalid || isSaving;">
+                    Submit
+                    <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                </md-button>
+            </md-dialog-actions>
+        </form>
+    </md-dialog>
+</script>
+
+<script>
+
+    app.controller('RoleCtrl', ['$scope', '$http', '$mdDialog', '$mdMedia', '$mdToast', '$location', '$q', 'manageService', 'dataFactory',
+        function ($scope, $http, $mdDialog, $mdMedia, $mdToast, $location, $q, manageService, dataFactory) {
+
+            $scope.init = function () {
+                $scope.$parent.isSaving = false;
+                $scope.$parent.dataLoaded = false;
+                dataFactory.getUsers().then(function (res) {
+                    $scope.users = res.data;
+                    $scope.$parent.dataLoaded = true;
+                })
+            }
+
+            $scope.status = '  ';
+
+            $scope.makeAdmin = function (id) {
+                $scope.$parent.isSaving = true;
+                $scope.test = id;
+                var response = manageService.makeAdmin($scope.test);
+                response.then(function (data) {
+                    if (data.data == "1") {
+                        //alert("Login success!");
+                        $scope.loginResult = "Success";
+                        window.location.href = "/Home";
+                    } else if (data.data == "-1") {
+                        //alert("Login fail!");
+                        $scope.loginResult = "Fail";
+                    } else {
+                        clearFields();
+                        //alert("Invalid data entered !");
+                    }
+                });
+            }
+
+            $scope.removeAdmin = function (id) {
+                $scope.$parent.isSaving = true;
+                var response = manageService.removeAdmin(id);
+
+                response.then(function (result) {
+                    if (result.status == 200) {
+                        hideError($scope);
+                        window.location.reload();
+                    }
+                }, function (errr) {
+                    showError(errr, $scope);
+                });
+            }
+
+            $scope.archiveUser = function (id) {
+                $scope.$parent.isSaving = true;
+                var response = manageService.removeUserJson(id);
+
+                response.then(function (result) {
+                    if (result.status == 200) {
+                        hideError($scope);
+                        window.location.reload();
+                    }
+                }, function (errr) {
+                    showError(errr, $scope);
+                });
+            }
+
+            $scope.saveCredentials = function () {
+                $scope.$parent.isSaving = true;
+                var response = manageService.register({
+                    password: $scope.credentials.password,
+                    Email: $scope.credentials.username
+                })
+
+                response.then(function (result) {
+                    if (result.status == 200) {
+                        $scope.$parent.isSaving = false;
+                        hideError($scope);
+                        window.location.reload();
+                    }
+                }, function (errr) {
+                    // DVH: not working, to be researched
+                    showDialogError(errr, $scope);
+
+                    // temp workaround
+                    $("#dialogErrorList").append("<li>" + ParseError(errr) + "</li>");
+                    $scope.$parent.isSaving = false;
+
+                    //showError(errr, $scope);
+                });
+
+            }
+
+            $scope.showAddUser = function (ev, username, password) {
+                $scope.credentials = {
+                    username: username,
+                    password: password
+                }
+                showDialog(ev, true, $scope, $mdMedia, $mdDialog, $mdToast, manageService);
+
+            };
+        }]);
+
+    app.factory('dataFactory', ['$http', 'manageService', function ($http, manageService) {
+        var vm = this;
+        vm.getUsers = function () {
+            return manageService.getUsers();
+        };
+        return vm;
+
+    }]);
+
+    app.service("manageService", function ($http) {
+        // make admin call
+        this.makeAdmin = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Manage/AddUserToAdminRole/" + id
+            });
+            return response;
+        };
+
+        // get users call
+        this.getUsers = function () {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Manage/GetUsersJson",
+                dataType: "json"
+            });
+            return response;
+        };
+
+        // register user
+        this.register = function (user) {
+            var response = $http
+            ({
+                method: "post",
+                url: "/Account/RegisterJson",
+                dataType: "json",
+                data: { objectAsString: JSON.stringify(user) }
+            });
+            return response;
+        };
+
+        this.removeUserJson = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Manage/RemoveUserJson/" + id,
+                dataType: "json",
+            });
+            return response;
+        }
+
+        this.removeAdmin = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Manage/RemoveUserFromAdminRole/" + id
+            });
+            return response;
+        };
+
+    });
+
+    function showDialog(ev, clickOutsideToClose, $scope, $mdMedia, $mdDialog, $mdToast, manageService) {
+        var scope = $scope;
+        /*var creds = $scope.credentials;
+        var username = $scope.username;
+        var password = $scope.password;*/
+        var useFullScreen = ($mdMedia('sm') || $mdMedia('xs')) && $scope.customFullscreen;
+        $mdDialog.show({
+            controller: ['$scope', '$mdDialog', function ($scope, $mdDialog) {
+                $scope.hide = function () {
+                    $mdDialog.hide();
+                };
+                $scope.cancel = function () {
+                    $scope.$parent.isSaving = false;
+                    $mdDialog.cancel();
+                };
+                $scope.answer = function (answer) {
+                    $mdDialog.hide(answer);
+                };
+                $scope.save = function () {
+                    $scope.$parent.isSaving = true;
+                    $scope.saveCredentials();
+                };
+                $scope.credentials = scope.credentials;
+                $scope.saveCredentials = scope.saveCredentials;
+                $scope.$parent.isSaving = scope.isSaving;
+            }],
+            templateUrl: 'addUser-template.html',
+            parent: angular.element(document.body),
+            targetEvent: ev,
+            clickOutsideToClose: true,
+            fullscreen: useFullScreen,
+            locals: {
+                credentials: $scope.credentials
+            }
+        })
+        .then(function (answer) {
+            $scope.status = 'You closed (and submitted?) the dialog.';
+            if (answer == "submit") {
+                //var scope = $scope;
+                var tmp = $scope.credentials;
+                /* var tmp2 = creds;
+                 //var user = new { username: $scope.credentials.username, password: $scope.credentials.password };
+                 var response = manageService.register(new { username: $scope.username, password: $scope.password });
+                 response.then(function (result) {
+                     alert(result.statusText);
+                 });*/
+            }
+            if (answer == "cancel") {
+                $scope.status = 'You cancelled the dialog.';
+                //alert("cancel");
+            }
+        }, function () {
+            $scope.status = 'You cancelled the dialog.';
+            //alert("cancel");
+        });
+        $scope.$watch(function () {
+            return $mdMedia('xs') || $mdMedia('sm');
+        }, function (wantsFullScreen) {
+            $scope.customFullscreen = (wantsFullScreen === true);
+        });
+    }
+</script>

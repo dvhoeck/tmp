@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "Product remarks";
+}
+
+<script src="~/Scripts/expansionPanel.directive.js"></script>
+<script src="~/Scripts/expansionPanel.service.js"></script>
+
+<md-list ng-init="initRemarkList()" ng-controller="RemarkCtrl" ng-app="GTS">
+    <md-card>
+        <md-card-content layout="column">
+            <md-input-container>
+                <label>Filter</label>
+                <input type="text" ng-model="search" id="filterField" focus-me="true">
+            </md-input-container>
+        </md-card-content>
+    </md-card>
+    <div dvh-pagination data="remarks"></div>
+    <loading></loading>
+    <md-item ng-repeat="remark in filtered | startFrom:(currentPage-1)*entryLimit | limitTo:entryLimit track by remark.Id" class="@Constants.Strings.AnimationClasses">
+        <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row">
+            <md-card-actions layout="row" layout-align="center center" flex="5">
+                <a href="/Remark/Remark/{{remark.ProductAssemblyId}}" style="cursor: pointer;"><ng-md-icon icon="mode_edit" class="md-hue-2" Size="24" aria-label="View remark"></a>
+            </md-card-actions>
+            <md-card-title layout="row" layout-align="center start" flex="90">
+                <md-card-title-text flex="85">
+                    <span class="md-headline">
+                        {{remark.RemarkSymptomTypeName}} {{remark.ProductSerial}} ({{remark.ProductModelName}})
+                    </span>
+                    <span class="md-subhead">{{remark.Description}}</span>
+                </md-card-title-text>
+                <md-card-title-text layout-align="center end">
+                    <span class="md-subhead">{{remark.CreationDate.toLocaleDateString()}}</span>
+                </md-card-title-text>
+            </md-card-title>
+        </md-card>
+    </md-item>
+    <md-card ng-show="dataLoaded && remarks.length == 0">
+        <md-card-content layout="row" layout-align="center center">
+            <span flex ng-show="dataLoaded && remarks.length == 0" class="animate-show-hide md-headline" layout="row" layout-align="center center" style="z-index: 1;"><i>No remarks at this time, good job!</i></span>
+        </md-card-content>
+    </md-card>
+    <div dvh-pagination data="remarks"></div>
+</md-list>
+
+<script src="~/Scripts/Views/RemarkScripts.js?@DateTime.Now.Ticks.ToString()"></script>

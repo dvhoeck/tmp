@@ -1,0 +1,239 @@
+﻿@{
+    ViewBag.Title = "Component work instructions";
+}
+<link rel="stylesheet" href="~/Content/expansionPanels-theme.css">
+<link rel="stylesheet" href="~/Content/expansionPanels.css">
+<script src="~/Scripts/expansionPanel.directive.js"></script>
+<script src="~/Scripts/expansionPanel.service.js"></script>
+<script src="~/Scripts/expansionPanelCollapsed.directive.js"></script>
+<script src="~/Scripts/expansionPanelExpanded.directive.js"></script>
+<script src="~/Scripts/expansionPanelFooter.directive.js"></script>
+<script src="~/Scripts/expansionPanelGroup.directive.js"></script>
+<script src="~/Scripts/expansionPanelGroup.service.js"></script>
+<script src="~/Scripts/expansionPanelHeader.directive.js"></script>
+<script src="~/Scripts/expansionPanelIcon.directive.js"></script>
+
+<style>
+    md-progress-linear {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+    }
+</style>
+
+
+
+<div ng-controller="ProductsCtrl" layout="column" ng-cloak="" class="inputdemoErrors" ng-app="GTS">
+    <md-content layout="column" data-ng-init="initWorkInstructions()">
+        <div flex>
+            <a href="~/Products/AddEditProductModel/{{productComponent.ProductModel.Id}}">
+                <md-button aria-label="Remark">
+                    <div layout="row" layout-align="center center">
+                        <div>
+                            <ng-md-icon icon="arrow_back"></ng-md-icon>
+                        </div>
+                        <div>
+                            &nbsp;Back to component
+                        </div>
+                    </div>
+                </md-button>
+            </a>
+        </div>
+        <div flex="5"></div>
+        <md-subheader class="md-warn">Component</md-subheader>
+        <div layout="row" layout-xs="column">
+            <div layout="column" flex-gt-xs>
+                <div class="md-subhead">Name</div>
+                <div class="md-title">{{productComponent.ComponentName}}</div>
+                <div hide-gt-xs><br /></div>
+            </div>
+            <div layout="column" flex-gt-xs ng-if="productComponent.UnderlyingProductModel != null">
+                <div class="md-subhead">Reference</div>
+                <div class="md-title">{{productComponent.UnderlyingProductModel.Name}}</div>
+                <div hide-gt-xs><br /></div>
+            </div>
+            <div layout="column" flex-gt-xs>
+                <span class="md-subhead">State</span>
+                <span class="md-title">{{productComponent.ProductModelState.Name}}</span>
+                <div hide-gt-xs><br /></div>
+            </div>
+            <div layout="column" flex-gt-xs>
+                <span class="md-subhead">Requirement</span>
+                <span class="md-title">{{requirement[productComponent.ComponentRequirement]}}</span>
+                <div hide-gt-xs><br /></div>
+            </div>
+            <div layout="column" flex-gt-xs ng-if="productComponent.ComponentRequirement == 1 || productComponent.ComponentRequirement == 4">
+                <span class="md-subhead">Revision input mask</span>
+                <span class="md-title">{{productComponent.RevisionInputMask}}</span>
+                <div hide-gt-xs><br /></div>
+            </div>
+            <div layout="column" flex-gt-xs ng-if="productComponent.ComponentRequirement > 1">
+                <span class="md-subhead">Serial input mask</span>
+                <span class="md-title">{{productComponent.SerialInputMask}}</span>
+            </div>
+        </div>
+
+        <md-subheader class="md-warn">Work instructions</md-subheader>
+
+        <md-list>
+            <md-card>
+                <md-card-content layout="column">
+                    <md-input-container>
+                        <label>Filter</label>
+                        <input type="text" ng-model="filterString">
+                    </md-input-container>
+                </md-card-content>
+            </md-card>
+            <loading></loading>
+            <div layout="row" class="componentReorderActions" hide-xs>
+                <span flex></span>
+                <md-button ng-click="resetOrder()" ng-disabled="!doReorder">
+                    Cancel
+                </md-button>
+                <md-button type="submit" ng-click="reorderInstructions(productComponent.Id)" ng-disabled="!doReorder" style="margin-right:20px;" class="md-raised md-primary">
+                    Reorder components
+                </md-button>
+            </div>
+            <div>
+                <md-item ng-repeat="instruction in productComponent.WorkInstructions track by instruction.Id | filter : filterString" trac>
+
+                    <input type="hidden" id="instructionIdField" class="instructionIdField" value="{{instruction.Id}}" />
+                    <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row" drag-to-reorder="workInstructions">
+                        <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                            <ng-md-icon icon="open_with" aria-label="drag to reorder" Size="48" class="dragIcon" hide-xs>
+                                <md-tooltip md-direction="bottom">Drag to reorder</md-tooltip>
+                            </ng-md-icon>
+
+                            <a ng-click="editInstruction(instruction)" style="cursor: pointer;">
+                                <ng-md-icon icon="mode_edit" class="md-hue-2" Size="24" aria-label="Edit instruction"></ng-md-icon>
+                                <md-tooltip md-direction="top">Edit instruction</md-tooltip>
+                            </a>
+
+                            <input type="hidden" class="componentIdField" value="{{instruction.Id}}" />
+                        </md-card-actions>
+                        <md-card-title layout="row" layout-align="center start" flex="90" hide-xs>
+                            <md-card-title-text>
+                                <span class="md-headline"> {{instruction.SequenceOrder}} - {{instruction.Title}}</span>
+                                <span class="md-subhead">{{instruction.Description}}</span>
+                            </md-card-title-text>
+                        </md-card-title>
+                        <md-card-title layout="row" layout-align="center start" flex="90" hide-gt-xs>
+                            <md-card-title-text>
+                                <span class="md-title"> {{instruction.SequenceOrder}} - {{instruction.Title}}</span>
+                                <span class="md-subhead">{{instruction.Description}}</span>
+                            </md-card-title-text>
+                        </md-card-title>
+                        <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                            <md-menu md-position-mode="target-right target">
+                                <a ng-click="$mdMenu.open($event)" style="cursor: pointer;">
+                                    <ng-md-icon icon="more_vert" aria-label="More..."></ng-md-icon>
+                                    <md-tooltip md-direction="top">Show more actions...</md-tooltip>
+                                </a>
+                                <md-menu-content width="3">
+                                    <md-menu-item>
+                                        <a ng-click="archiveInstruction(instruction.Id, productComponent)" style="cursor: pointer;">
+                                            <md-item-content layout="row" layout-align="start center">
+                                                <div class="inset">
+                                                    <ng-md-icon icon="delete" aria-label="Archive work instruction">
+                                                </div>
+                                                <div class="inset">
+                                                    Archive instruction
+                                                </div>
+                                            </md-item-content>
+                                        </a>
+                                    </md-menu-item>
+                                </md-menu-content>
+                            </md-menu>
+                        </md-card-actions>
+                    </md-card>
+                </md-item>
+            </div>
+        </md-list>
+
+        <div class="md-padding" id="popupContainer" ng-cloak ng-controller="ProductsCtrl">
+            <script type="text/ng-template" id="instruction-template.html">
+                <md-dialog aria-label="Product model components" flex="50" flex-xs="90" ng-cloak ng-app="GTS" ng-controller="ProductsCtrl">
+                    <md-toolbar>
+                        <div class="md-toolbar-tools">
+                            <h2>Product component work instructions</h2>
+                            <span flex></span>
+                            <md-button ng-click="answer('cancel')" class="md-icon-button">
+                                <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                            </md-button>
+                        </div>
+                    </md-toolbar>
+                    <md-content>
+                        <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                            <div flex>
+                                <ul>
+                                    <md-item ng-repeat="error in dialogActionResult">
+                                        <li>{{error}}</li>
+                                    </md-item>
+                                </ul>
+                            </div>
+
+                            <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                            </md-button>
+                        </div>
+
+                        <form name="instructionForm" id="instructionForm">
+                            <div layout="row" class="md-padding">
+                                <md-input-container class="md-block" flex>
+                                    <label>Instruction</label>
+                                    <input md-maxlength="90" name="Title" required ng-model="addEditInstruction.Title">
+                                    <div ng-messages="instructionForm.Title.$error">
+                                    </div>
+                                </md-input-container>
+                            </div>
+
+                            <div layout="row" class="md-padding">
+                                <md-input-container class="md-block" flex>
+                                    <label>Instruction description</label>
+                                    <textarea name="Description" cols="40" rows="3" md-maxlength="2500" ng-model="addEditInstruction.Description"></textarea>
+                                    <div ng-messages="instructionForm.Description.$error">
+                                        <div ng-message="md-maxlength">The description must be less than 2500 characters long.</div>
+                                    </div>
+                                </md-input-container>
+                            </div>
+
+                            <div layout="row" class="md-padding">
+                                <md-input-container class="md-block" flex-gt-xs>
+                                    <lf-ng-md-file-input lf-files="$parent.files" preview accept="image/*" progress lf-placeholder="Upload instruction image"></lf-ng-md-file-input>
+                                    <div ng-messages="instructionForm.InstructionImage.$error">
+                                    </div>
+                                </md-input-container>
+                            </div>
+
+                            <div layout="row" layout-xs="column" class="md-padding">
+                                <md-input-container class="ng-animate" flex md-padding style="text-align: center;" ng-if="addEditInstruction.RelativeImagePath">
+                                    <img ng-src="/Content/Images/WorkInstructions/{{addEditInstruction.RelativeImagePath + '?'  + datePart()}}" style="width:80%;" /><br />
+                                    <a ng-click="removeImage(addEditInstruction.Id, productComponent.Id, addEditInstruction.SequenceOrder)" style="cursor: pointer;" ng-if="addEditInstruction.RelativeImagePath.indexOf('placeholder') === -1">[ remove image ]</a>
+                                </md-input-container>
+                            </div>
+
+                            <md-dialog-actions layout="row">
+                                <span flex></span>
+
+                                <md-button ng-click="answer('cancel')">
+                                    Cancel
+                                </md-button>
+                                <md-button ng-click="saveWorkInstruction(addEditInstruction, productComponent); " style="margin-right:20px;" class="md-raised md-primary" ng-disabled="instructionForm.$invalid || isSaving">
+                                    <span>SAVE</span>
+                                    <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                                </md-button>
+                            </md-dialog-actions>
+                        </form>
+                    </md-content>
+                </md-dialog>
+            </script>
+        </div>
+    </md-content>
+
+    <md-button class="md-fab md-fab-bottom-right docs-scroll-fab md-button md-ink-ripple scrolling" aria-label="New work instruction" ng-click="editInstruction(null)" style="position:fixed !important;" ng-disabled="instructionForm.$invalid || isSaving">
+        <md-tooltip md-direction="top">New work instruction</md-tooltip>
+        <ng-md-icon icon="add"></ng-md-icon>
+    </md-button>
+</div>
+
+<script src="~/Scripts/Views/ProductScripts.js?@DateTime.Now.Ticks.ToString()"></script>

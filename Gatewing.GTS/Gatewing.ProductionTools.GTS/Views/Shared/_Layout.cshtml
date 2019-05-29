@@ -1,0 +1,1734 @@
+﻿@using System.Configuration;
+<html lang="en" ng-app="GTS">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <base href="/">
+
+    <link href="~/Content/angular-material.min.css" rel="stylesheet" />
+
+    @*<link data-require="bootstrap@3.3.6" data-semver="3.3.6" rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />*@
+    <link href="~/Content/docs.css" rel="stylesheet" />
+    <link href="~/Content/roboto.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/Content/lf-ng-md-file-input.css" />
+    <link rel="stylesheet" href="~/Content/angular-material-advanced-lightbox.min.css" />
+    <link rel="stylesheet" href="~/Content/Site.css">
+    @*<link rel="stylesheet" href="~/Content/nga.min.css">*@
+    <link rel="stylesheet" href="~/Content/nga.all.min.css">
+    <link rel="stylesheet" href="~/Content/Animations.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="~/Content/angular-material-badge.min.css" rel="stylesheet" />
+
+    <!-- Angular Material Dependencies -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-route.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-messages.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.1/moment.js"></script>
+
+    <!-- Angular Material Library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
+
+    <script src="~/Scripts/angular-material-icons.min.js"></script>
+    <script src="~/Scripts/angular-material-advanced-lightbox.min.js"></script>
+    <script src="~/Scripts/lf-ng-md-file-input.js"></script>
+    <script src="~/Scripts/Views/site.js"></script>
+    <script src="~/Scripts/mask.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-sanitize.js"></script>
+    <script src="~/Scripts/angular-material-badge.min.js"></script>
+
+    <!-- JQuery -->
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+    <script src="~/Scripts/detectScanInput.js"></script>
+
+    @*<script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js" integrity="sha384-kW+oWsYx3YpxvjtZjFXqazFpA7UP/MbiY4jvs+RWZo2+N94PFZ36T6TFkc9O3qoB"
+        crossorigin="anonymous"></script>*@
+
+    @*<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">*@
+
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js" integrity="sha384-kW+oWsYx3YpxvjtZjFXqazFpA7UP/MbiY4jvs+RWZo2+N94PFZ36T6TFkc9O3qoB"
+            crossorigin="anonymous"></script>
+
+    <script src="~/Scripts/angular-number-picker.js"></script>
+
+    <script>
+        var app = angular.module('GTS', ['ngMaterial', 'ngMdIcons', 'ngRoute', 'mb-dragToReorder', 'lfNgMdFileInput', 'material.components.expansionPanels', 'ui.mask', 'ngMessages', 'mdLightbox', 'ngSanitize', 'ngAnimate', 'ngMdBadge', 'ngNumberPicker']);
+
+        angular.module('material.components.expansionPanels', ['material.core']);
+
+        app.config(['$locationProvider', function ($locationProvider) {
+            $locationProvider.html5Mode({
+                enabled: true,
+                rewriteLinks: false
+            });
+        }]);
+
+        /*  LOGIN CTRL */
+        app.controller('LoginCtrl', ['$scope', '$mdBottomSheet', '$mdSidenav', '$mdDialog', '$mdToast', '$mdMedia', '$http', 'loginService',
+            function ($scope, $mdBottomSheet, $mdSidenav, $mdDialog, $mdToast, $mdMedia, $http, loginService) {
+                $scope.status = '  ';
+                $scope.customFullscreen = $mdMedia('xs') || $mdMedia('sm');
+                var _userName = '';
+                var _password = '';
+
+                $scope.credentials = {
+                    username: '',
+                    password: ''
+                }
+
+                $scope.cancel = function () {
+                    alert("cancelling");
+                }
+
+                $scope.submit = function () {
+                    var User =
+                    {
+                        username: $scope.credentials.username,
+                        password: $scope.credentials.password
+                    };
+
+                    var response = loginService.Login(User);
+                    response.then(function (data) {
+                        if (data.data == "1") {
+                            $scope.loginResult = "Success";
+                            window.location.href = "/Home";
+                        } else if (data.data == "-1") {
+                            $scope.loginResult = "Failed to log on";
+                        } else {
+                            clearFields();
+                        }
+                    }, function (err) {
+                        alert(err);
+                    });
+                };
+
+                $scope.forgotPassword = function (emailAddress) {
+                    loginService.forgotPassword(emailAddress).then(function (response) {
+                        showToast("Password reset requested, check your email.", $mdToast);
+                        $mdDialog.hide();
+                    });
+                }
+
+                $scope.LoginButtonText = "Log in";
+
+                $scope.checkToShowAdvanced = function (ev) {
+                    if (window.location.href.indexOf("ResetPasswordFromEmail") == -1) {
+                        $scope.showAdvanced(ev);
+                    }
+                }
+
+                $scope.showAdvanced = function (ev) {
+                    dialogShowAdvanced(ev, true, 'login-template.html', $scope, $mdMedia, $mdDialog);
+                }
+
+                $scope.showToast = function (content) {
+                    showToast(content, this.$smToast);
+                };
+
+            }]);
+
+        app.config(function ($mdThemingProvider) {
+            // DEFAULT THEME
+            $mdThemingProvider.theme('default')
+              .primaryPalette('grey', {
+                  'default': '800',
+                  'hue-1': '200'
+              })
+              .accentPalette('orange')
+              .warnPalette('deep-orange');
+
+            // DOCSDARK ALTERNATE THEME
+            $mdThemingProvider.theme('docsDark', 'default')
+              .primaryPalette('orange')
+              .accentPalette('deep-orange')
+              .warnPalette('red')
+              .dark(); // sets it to "dark" overall look
+
+            // ORANGE LIGHT ALTERNATE THEME
+            $mdThemingProvider.theme('orangeLight', 'default')
+              .primaryPalette('orange')
+              .accentPalette('deep-orange')
+              .warnPalette('red'); // sets it to "dark" overall look
+
+            // DOCSLIGHT ALTERNATE THEME
+            $mdThemingProvider.theme('docsLight', 'default')
+              .primaryPalette('deep-orange');
+
+            $mdThemingProvider.alwaysWatchTheme(true);
+        });
+
+        function showToast(content, $mdToast, position) {
+            $mdToast.show($mdToast.simple().textContent(content).parent(document.querySelectorAll('#tab1-content')).position(position ? position : 'bottom left'));
+        }
+
+        function showCustomToast(content, $mdToast, position, icon, iconColor, timeOut) {
+            $mdToast.show({
+                hideDelay   : timeOut ? timeOut : 3000,
+                position    : position ? position : 'bottom left',
+                controller  : 'ToastCtrl',
+                templateUrl : 'toast-template.html',
+                locals       : {
+                    icon: icon,
+                    content: content,
+                    iconColor: iconColor ? iconColor : "accent"
+                },
+            });
+        };
+
+        app.controller('ToastCtrl', function($scope, $mdToast, $mdDialog, icon, content, iconColor) {
+            $scope.icon = icon;
+            $scope.iconColor = iconColor;
+            $scope.content = content;
+
+            $scope.closeToast = function() {
+
+                $mdToast
+                  .hide()
+                  .then(function() {
+                      alert("custom toast closed");
+                  });
+            };
+        });
+
+        app.config(function ($mdDateLocaleProvider) {
+            $mdDateLocaleProvider.formatDate = function (date) {
+                if (!date) {
+                    return '';
+                }
+
+                var day = date.getDate();
+                var monthIndex = date.getMonth();
+                var year = date.getFullYear();
+
+                return day + '/' + (monthIndex + 1) + '/' + year;
+            };
+        });
+
+        /*  APP CTRL */
+        app.controller('AppCtrl', ['$scope', '$mdBottomSheet', '$mdSidenav', '$mdDialog', '$mdMedia', '$mdToast', '$q', '$window', 'loginService', 'openAssemblyService', 'statsService',
+        function ($scope, $mdBottomSheet, $mdSidenav, $mdDialog, $mdMedia, $mdToast, $q, $window, loginService, openAssemblyService, statsService) {
+
+            // DEBUGGING
+            //$scope.showErrorSummaryBottomSheet(null, ["Error message one", "Error message two", "Error message three", "Error message four", "Error message five", "Error message six", "Error message seven", "Error message eight"]);
+
+            ///$mdMedia('gt-md')
+            //doLockOpenSideNav
+            $scope.doLockOpenSideNav = $mdMedia('gt-md');
+            $scope.overrideSideNavLock = function(doOverride){
+                $scope.doLockOpenSideNav = doOverride;
+            };
+
+            $scope.asyncUrl = '@ConfigurationManager.AppSettings["asyncUrl"]';
+
+            $scope.dataLoaded = true;
+            $scope.isSaving = false;
+
+            $scope.isInConfig = function (configurations, config) {
+                return configurations.map(function (e) { return e.Name; }).indexOf(config.Name) > -1;
+            }
+
+            $scope.getColor = function (colorIndex) {
+                if (colorIndex === 0) {
+                    return "#9d9d9d";
+                }
+
+                var size = 12;
+                var rainbow = new Array(size);
+
+                for (var i = 0; i < size; i++) {
+                    var red = sin_to_hex(i, 0 * Math.PI * 2 / 3, size); // 0   deg
+                    var blue = sin_to_hex(i, 1 * Math.PI * 2 / 3, size); // 120 deg
+                    var green = sin_to_hex(i, 2 * Math.PI * 2 / 3, size); // 240 deg
+
+                    rainbow[i] = "#" + red + green + blue;
+                }
+
+                return rainbow[colorIndex];
+            }
+
+            $scope.hideSideNav = false;
+            $scope.setSideNavHidden = function(doSet){
+                $scope.hideSideNav = doSet;
+            };
+
+            $scope.toggleSidenav = function(id){
+                $mdSidenav(id).toggle();
+            };
+
+            $scope.displayTitleBar = true;
+            $scope.hideTitleBar = function () {
+                $scope.displayTitleBar = false;
+            };
+
+            $scope.logout = function () {
+                var response = loginService.Logout();
+                response.then(function (data) {
+                    window.location.href = "/Home";
+                });
+            };
+
+            $scope.disableNewAssemblyTab = true;
+            $scope.showOpenAssembly = function () {
+                $scope.disableNewAssemblyTab = true;
+                $scope.selectedAssemblyTabIndex = 0;
+                dialogShowOpenAssembly(null, true, 'open-assembly-template.html', $scope, $mdMedia, $mdDialog, $mdToast);
+            };
+
+            $scope.selectedAssembly = null;
+            $scope.searchText = null;
+
+            $scope.querySearchReferencePromiseForAssemblies = function (query, serialType) {
+                $scope.disableNewTab = true;
+                return new Promise(function (resolve, reject) {
+                    openAssemblyService.searchProductAssembly(query, serialType)
+                    .then(function (response) {
+                        var parsedData = JSON.parse(response.data);
+                        if (parsedData) {
+                            resolve(parsedData);
+                        }
+                        else {
+                            reject();
+                        }
+                    });
+                })
+            }
+
+            $scope.setContentWidth = function (width) {
+                if (width === undefined) {
+                    width = 80;
+                }
+
+                $scope.contentWidth = width;
+            }
+            $scope.contentWidth = 80;
+
+            $scope.scrollY = "auto";
+            $scope.setScrollY = function(doSet){
+                if(doSet){
+                    $scope.scrollY = "auto";
+                } else {
+                    $scope.scrollY = "hidden";
+                }
+            }
+
+            $scope.getGtsStats = function () {
+                statsService.getGtsStats().then(function (response) {
+                    var result = JSON.parse(response.data);
+                    $scope.modelCount = result.modelCount;
+                    $scope.assemblyCount = result.assemblyCount;
+                    $scope.remarkCount = result.remarkCount;
+                    $scope.userCount = result.userCount;
+                });
+            }
+
+            $scope.getOrCreateAssembly = function () {
+                var input = $scope.serial || $scope.searchText;
+                openAssemblyService.getOrCreateAssembly(input).then(function (response) {
+                    var result = JSON.parse(response.data);
+                    location.href = result.Url;
+                    $scope.error = "";
+                }).catch(function (error) {
+                    $scope.error = "The entered serial could not be matched to an assembly."
+                })
+            }
+
+            // these vars are assigned values from the codebehind
+            var authenticated = @Request.IsAuthenticated.ToString().ToLower();
+            $scope.authenticatedAsAdministrator = @User.IsInRole("Administrators").ToString().ToLower();
+
+            $scope.menuData = [
+            section = {
+                caption: "NOPE NOT HERE",
+                hideCaption: true,
+                pages: [{
+                    caption: "Dashboard",
+                    icon: "fa fa-fw fa-chalkboard-teacher",
+                    link: "/",
+                    action: null
+
+                }, {
+                    caption: "Assemble",
+                    icon: "fa fa-fw fa-wrench",
+                    link: null,
+                    action: $scope.showOpenAssembly
+
+                }, {
+                    caption: "Assemblies",
+                    icon: "fa fa-fw fa-th-list",
+                    link: "/Products/Assemblies",
+                    action: null,
+                }, {
+                    caption: "Open remarks",
+                    icon: "fa fa-fw fa-microscope",
+                    link: "/Remark/RemarkList",
+                    action: null,
+                }, {
+                    caption: "Scanner setup",
+                    icon: "fa fa-fw fa-barcode",
+                    link: "/Manage/BarcodeConfiguration",
+                    action: null,
+                }, {
+                    caption: "Remote devices",
+                    icon: "fa fa-fw fa-microchip",
+                    link: "/RemoteDevices/Index",
+                    action: null,
+                }, {
+                    caption: "Work Instructions",
+                    icon: "fa fa-fw fa-graduation-cap",
+                    link: "/Products/Instructions",
+                    action: null,
+                }, {
+                    caption: "Shipping",
+                    icon: "fa fa-fw fa-shipping-fast",
+                    link: "/Shipping/PrepareShipping",
+                    action: null
+
+                }
+                ]
+            }];
+
+            if($scope.authenticatedAsAdministrator){
+                var adminSection = {
+                    caption: "Management",
+                    hideCaption: false,
+                    pages: [{
+                        caption: "Master tool list",
+                        icon: "fa fa-fw fa-screwdriver",
+                        link: "/Products/Tools",
+                        action: ""
+
+                    }, {
+                        caption: "Product models",
+                        icon: "fa fa-fw fa-cogs",
+                        link: "/Products",
+                        action: null
+
+                    }, {
+                        caption: "States and types",
+                        icon: "fa fa-fw fa-university",
+                        link: "/Remark",
+                        action: null
+
+                    }, {
+                        caption: "Reports",
+                        icon: "fa fa-fw fa-chart-pie",
+                        link: "/Reports",
+                        action: null
+
+                    }, {
+                        caption: "Users",
+                        icon: "fa fa-fw fa-users-cog",
+                        link: "/Manage/UserRoles",
+                        action: null
+
+                    }, {
+                        caption: "Shipping management",
+                        icon: "fa fa-fw fa-dolly-flatbed",
+                        link: "/Shipping/ShippingManagement",
+                        action: null
+                    }],
+                };
+
+                $scope.menuData.push(adminSection);
+            }
+
+            if(!authenticated){
+                $scope.menuData = null;
+            } else {
+                authenticatedSection = {
+                    caption: "Account",
+                    hideCaption: false,
+                    pages: [{
+                        caption: "Change password",
+                        icon: "fa fa-fw fa-key",
+                        link: "Account/ResetPasswordFromLoggedIn",
+                        action: null
+
+                    }, {
+                        caption: "Log out",
+                        icon: "fa fa-fw fa-sign-out-alt",
+                        link: "",
+                        action: $scope.logout
+
+                    }]
+                }
+
+                $scope.menuData.push(authenticatedSection);
+            }
+
+            $scope.alert = '';
+
+            $scope.showListBottomSheet = function ($event) {
+                $scope.alert = '';
+                $mdBottomSheet.show({
+                    templateUrl: 'scaninput-template.html',
+                    controller: 'ListBottomSheetCtrl',
+                    targetEvent: $event,
+                    scope: $scope,
+                    preserveScope: true
+                }).then(function (clickedItem) {
+                });
+            };
+
+            $scope.showErrorSummaryBottomSheet = function ($event, vMessages) {
+                $scope.alert = '';
+                $mdBottomSheet.show({
+                    templateUrl: 'ErrorSummary-Template.html',
+                    controller: ['$scope', 'ValidationMessages', function($scope, ValidationMessages) {
+                        $scope.ValidationMessages = ValidationMessages;
+                    }],
+                    targetEvent: $event,
+                    scope: $scope,
+                    preserveScope: true,
+                    clickOutsideToClose: false,
+                    locals: {
+                        ValidationMessages: vMessages
+                    }
+                }).then(function (clickedItem) {
+                });
+            };
+
+            $scope.reload = function () {
+                window.location.reload();
+            }
+
+            $scope.closeErrorContainer = function () {
+                hideError($scope);
+            }
+
+            $scope.startCapture = false;
+            $scope.endCapture = false;
+            $scope.chars = [];
+
+            $scope.createAndNavigateToAssembly = function (modelId, serial) {
+                $scope.$parent.isSaving = true;
+                openAssemblyService.getOrCreateAssembly(modelId, serial).then(function (response) {
+                    var result = JSON.parse(response.data);
+                    window.location.href = "/Products/Assembly/" + result.Id;
+                }, function (err) {
+                    showError(err, $scope);
+                });
+            }
+
+            $scope.navigateToAssemblyPage = function (id) {
+                var url = "/Products/Assembly/" + id;
+                window.location.href = url;
+            }
+
+            $scope.showModelSelect = function (serial, serialType) {
+                openAssemblyService.getModelsForSerialFormatJson(serial, serialType).then(function (response) {
+                    $scope.disableNewAssemblyTab = false;
+                    $scope.selectedAssemblyTabIndex = 1;
+                    $scope.serialInput = serial;
+                    $scope.modelsForSerialFormat = JSON.parse(response.data);
+                }, function (err) {
+
+                });
+            }
+
+            $scope.previousTab = function () {
+                var newTabIndex = $scope.selectedAssemblyTabIndex - 1;
+                if (newTabIndex < 0) {
+                    newTabIndex = 0
+                }
+                $scope.selectedAssemblyTabIndex = newTabIndex;
+            }
+
+            $scope.hideBottomSheet = function () {
+                $mdBottomSheet.hide();
+            }
+
+            $scope.selectedSectionCaption = null;
+            $scope.activeMenuItem = null;
+            $scope.activeSection = null;
+            $scope.toggle = function (section) {
+                if ($scope.selectedSectionCaption != section.caption) {
+                    $scope.selectedSectionCaption = section.caption;
+                } else {
+                    $scope.selectedSectionCaption = null;
+                }
+            }
+
+            $scope.isOpen = function (section) {
+                return $scope.selectedSectionCaption == section.caption;
+            }
+
+            $scope.menuClicked = function (page) {
+                if ($scope.activeMenuItem == page) {
+                    $scope.activeMenuItem = null;
+                } else {
+                    $scope.activeMenuItem = page;
+                }
+            }
+
+            $("body").scannerDetection(function (e) {
+
+                // don't parse input when we're in an assembly input element
+                if (!$(document.activeElement).parents().hasClass("assemblyInputField") && !$(document.activeElement).hasClass("assemblyInputField") && $(document.activeElement).attr("name") != "autocompleteField") {
+
+                    console.log("Detected potential scan: " + e);
+
+                    $scope.serial = e;
+
+                    // once we have 3 or more characters
+                    if ($scope.serial.length > 3) {
+                        $scope.hits = [];
+                        //$mdBottomSheet.hide();
+                        $scope.error = "";
+                        $scope.showListBottomSheet(null);
+
+                        // pass to server side to parse input and match it to one or more models
+                        openAssemblyService.getModelsForSerial($scope.serial).then(function (response) {
+                            var result = JSON.parse(response.data);
+                            $scope.serial = result.serial;
+                            $scope.hits = result.hits;
+                            if ($scope.hits && $scope.hits.length == 1) {
+                                sleep(2000).then(() => {
+                                    $scope.createAndNavigateToAssembly($scope.hits[0].Id, $scope.serial);
+                                });
+                            }
+                        }, function (err) {
+                            $scope.error = "No model could be matched to the serial you scanned.";
+                        });
+                    }
+
+                    $scope.$apply();
+                }
+            })
+
+            $scope.initPage = function () {
+                var urlPart = window.location.toString().split("://")[1];
+
+                for(var c = 0; c < $scope.menuData.length; c++){
+                    for(var pC = 0; pC < $scope.menuData[c].pages.length; pC++){
+                        var menuItemPageUrlLength = $scope.menuData[c].pages[pC].length;
+                        var startIndex = urlPart.indexOf("/");
+                        if(urlPart.substring(startIndex, menuItemPageUrlLength) == $scope.menuData[c].pages[pC].link)
+                        {
+                            $scope.activeMenuItem = $scope.menuData[c].pages[pC];
+                            $scope.activeSection = $scope.menuData[c];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $scope.showConfirm = function(title, text, ariaLabel, ok, cancel, ev) {
+                // Appending dialog to document.body to cover sidenav in docs app
+                var deferred = $q.defer();
+                var confirm = $mdDialog.confirm()
+                      .title(title)
+                      .textContent(text)
+                      .ariaLabel(ariaLabel)
+                      .targetEvent(ev)
+                      .ok(ok)
+                      .cancel(cancel);
+
+                $mdDialog.show(confirm).then(function() {
+                    deferred.resolve(true);
+                }, function() {
+                    deferred.reject(false);
+                });
+
+                return deferred.promise;
+            };
+
+            $scope.showAlert = function(title, text, ev){
+                var alert = $mdDialog.alert()
+                          .title(title)
+                          .textContent(text)
+                          .ariaLabel(title)
+                          .targetEvent(ev)
+                          .ok('Close');
+                $mdDialog.show(alert);
+            };
+
+            // doubled in assemblyScripts.js
+            $scope.deleteAssembly = function (ev, id, serial) {
+                var deferred = $q.defer();
+
+                openAssemblyService.getAssemblyThatReferencesThis(id).then(function (response) {
+                    hideError($scope);
+                    $scope.assemblyThatReferencesThis = JSON.parse(response.data);
+                    if ($scope.assemblyThatReferencesThis) {
+                        $scope.showAlert('You cannot delete this product assembly!',
+                            'The following assembly has referenced this product in one of its components: ' + $scope.assemblyThatReferencesThis.ProductSerial + ' (' + $scope.assemblyThatReferencesThis.ModelName + ')')
+                        deferred.reject(false);
+                    } else {
+                        $scope.showConfirm("Confirm assembly delete",
+                            'Click delete to remove this assembly with serial ' + serial + '. This cannot be undone and will also delete any remarks and component assemblies.',
+                            "Confirm assembly delete", "Delete", "Cancel", null).then(function (data) {
+                                openAssemblyService.deleteAssembly(id).then(function () {
+                                    hideError($scope);
+
+                                    showToast("Assembly deleted.", $mdToast);
+
+                                    deferred.resolve(true);
+                                }, function (errr) {
+                                    showError(errr.statusText, $scope);
+                                    deferred.reject(false);
+                                });
+                            }, function () {
+                                showError("Delete canceled.", $scope);
+                                deferred.reject(false);
+                            });
+                    }
+                }, function (err) {
+                    showError(err.statusText, $scope);
+                    deferred.reject(false);
+                });
+
+                return deferred.promise;
+            };
+
+            $scope.openRemarkPrintScreen = function(id){
+                $window.open('/Remark/PrintRemarks/' + id, '_blank', 'menubar=no,location=no,resizable=no,scrollbars=no,status=no, height=450px, width=700px;');
+            }
+
+        }]);
+
+        app.filter('startFrom', function () {
+            return function (input, start) {
+                if (input) {
+                    start = +start; //parse to int
+                    return input.slice(start);
+                }
+                return [];
+            }
+        });
+
+        app.directive('ngPrint', function (filterFilter) {
+            var printSection = document.getElementById('printSection');
+
+            // if there is no printing section, create one
+            if (!printSection) {
+                printSection = document.createElement('div');
+                printSection.id = 'printSection';
+                document.body.appendChild(printSection);
+            }
+
+            function link(scope, element, attrs) {
+                element.on('click', function () {
+                    var elemToPrint = document.getElementById(attrs.printElementId);
+                    if (elemToPrint) {
+                        printElement(elemToPrint);
+                        window.print();
+                    }
+                });
+
+                window.onafterprint = function () {
+                    // clean the print section before adding new content
+                    printSection.innerHTML = '';
+                }
+            }
+
+            function printElement(elem) {
+                // clones the element you want to print
+                var domClone = elem.cloneNode(true);
+                printSection.appendChild(domClone);
+            }
+            return {
+                link: link,
+                restrict: 'A'
+            };
+        });
+
+        app.directive('dvhPagination', function (filterFilter) {
+            return {
+                templateUrl: 'pagination-template.html',
+                link: function (scope, element, attrs) {
+                    scope.paginationReady = false;
+                    //scope.list = scope.$eval(attrs.data);
+
+                    scope.listName = attrs.data;
+
+                    scope.currentPage = 1; //current page
+
+                    scope.maxSize = 8; //pagination max size
+
+                    scope.entryLimit = 20; //max rows for data table
+
+                    scope.noOfItems = 0;
+
+                    scope.selectPage = function (pageNr) {
+                        scope.currentPage = pageNr;
+                    }
+
+                    scope.getPageNumberArray = function () {
+                        //if(scope.noOfPages > 11){
+                        var array = [];
+                        array.push(1);
+
+                        if(scope.noOfPages > scope.maxSize){
+                            if(scope.currentPage < 6){
+                                for(var c = 2; c < scope.maxSize; c++){
+                                    array.push(c);
+                                }
+                                array.push("...");
+                            }
+                            else if((scope.currentPage >= 6 && scope.currentPage < (scope.noOfPages - 3)) )
+                            {
+                                array.push("...");
+
+                                array.push(scope.currentPage - 2);
+                                array.push(scope.currentPage - 1);
+                                array.push(scope.currentPage);
+                                array.push(scope.currentPage + 1);
+                                array.push(scope.currentPage + 2);
+
+                                array.push("...");
+                            }
+                            else if(scope.currentPage >= (scope.noOfPages - scope.maxSize))
+                            {
+                                array.push("...");
+
+                                for(var c = (scope.noOfPages - 6); c < scope.noOfPages; c++){
+                                    array.push(c);
+                                }
+                            }
+                        } else {
+                            for(var c = 2; c <= scope.noOfPages; c++){
+                                array.push(c);
+                            }
+                        }
+
+                        return array;
+                    }
+
+                    scope.$watchGroup([scope.listName, 'search', 'entryLimit'], function (newValues, oldValues, scope) {
+                        scope.currentPage = 1;
+
+                        if(!newValues){
+                            return;
+                        }
+
+                        if(!newValues[0]){
+                            return;
+                        }
+
+                        scope.filtered = filterFilter(newValues[0], newValues[1]);
+
+                        scope.noOfItems = scope.filtered.length;
+
+                        if(scope.filtered){
+                            scope.dataLoaded = true;
+                        }
+
+                        var tmpNoOfPagesCalculation = Math.ceil(scope.filtered.length / newValues[2]);
+
+                        scope.noOfPages = tmpNoOfPagesCalculation === 0 ? 1: tmpNoOfPagesCalculation;
+                        if (scope.currentPage >= scope.noOfPages) {
+                            scope.currentPage = scope.noOfPages;
+                        }
+                    });
+
+                    scope.setEntryLimit = function (val) {
+                        scope.entryLimit = val;
+                    };
+
+                }
+            };
+        });
+
+        app.directive('sticky', Sticky);
+
+        Sticky.$inject = [ '$mdSticky' ];
+
+        function handleError($scope, data){
+            var el = document.createElement('html');
+            el.innerHTML = data;
+            var title = el.getElementsByTagName('title')[0].innerHTML;
+            showError(title, $scope);
+        }
+
+        function Sticky($mdSticky) {
+            return {
+                restrict : 'EA',
+                link : function(scope, element) {
+                    $mdSticky(scope, element);
+                }
+            }
+        }
+
+        function sin_to_hex(i, phase, size) {
+            var sin = Math.sin(Math.PI / size * 2 * i + phase);
+            var int = Math.floor(sin * 127) + 128;
+            var hex = int.toString(16);
+
+            return hex.length === 1 ? "0" + hex : hex;
+        }
+
+        app.controller('ListBottomSheetCtrl', function ($scope, $mdBottomSheet) {
+
+            $scope.listItemClick = function ($index) {
+                var clickedItem = $scope.items[$index];
+                $mdBottomSheet.hide(clickedItem);
+            };
+
+        });
+
+        app.directive('userAvatar', function () {
+            return {
+                replace: true,
+                template: '<svg class="user-avatar" viewBox="0 0 128 128" height="64" width="64" pointer-events="none" display="block" > <path fill="#FF8A80" d="M0 0h128v128H0z" /> <path fill="#FFE0B2" d="M36.3 94.8c6.4 7.3 16.2 12.1 27.3 12.4 10.7-.3 20.3-4.7 26.7-11.6l.2.1c-17-13.3-12.9-23.4-8.5-28.6 1.3-1.2 2.8-2.5 4.4-3.9l13.1-11c1.5-1.2 2.6-3 2.9-5.1.6-4.4-2.5-8.4-6.9-9.1-1.5-.2-3 0-4.3.6-.3-1.3-.4-2.7-1.6-3.5-1.4-.9-2.8-1.7-4.2-2.5-7.1-3.9-14.9-6.6-23-7.9-5.4-.9-11-1.2-16.1.7-3.3 1.2-6.1 3.2-8.7 5.6-1.3 1.2-2.5 2.4-3.7 3.7l-1.8 1.9c-.3.3-.5.6-.8.8-.1.1-.2 0-.4.2.1.2.1.5.1.6-1-.3-2.1-.4-3.2-.2-4.4.6-7.5 4.7-6.9 9.1.3 2.1 1.3 3.8 2.8 5.1l11 9.3c1.8 1.5 3.3 3.8 4.6 5.7 1.5 2.3 2.8 4.9 3.5 7.6 1.7 6.8-.8 13.4-5.4 18.4-.5.6-1.1 1-1.4 1.7-.2.6-.4 1.3-.6 2-.4 1.5-.5 3.1-.3 4.6.4 3.1 1.8 6.1 4.1 8.2 3.3 3 8 4 12.4 4.5 5.2.6 10.5.7 15.7.2 4.5-.4 9.1-1.2 13-3.4 5.6-3.1 9.6-8.9 10.5-15.2M76.4 46c.9 0 1.6.7 1.6 1.6 0 .9-.7 1.6-1.6 1.6-.9 0-1.6-.7-1.6-1.6-.1-.9.7-1.6 1.6-1.6zm-25.7 0c.9 0 1.6.7 1.6 1.6 0 .9-.7 1.6-1.6 1.6-.9 0-1.6-.7-1.6-1.6-.1-.9.7-1.6 1.6-1.6z" /> <path fill="#E0F7FA" d="M105.3 106.1c-.9-1.3-1.3-1.9-1.3-1.9l-.2-.3c-.6-.9-1.2-1.7-1.9-2.4-3.2-3.5-7.3-5.4-11.4-5.7 0 0 .1 0 .1.1l-.2-.1c-6.4 6.9-16 11.3-26.7 11.6-11.2-.3-21.1-5.1-27.5-12.6-.1.2-.2.4-.2.5-3.1.9-6 2.7-8.4 5.4l-.2.2s-.5.6-1.5 1.7c-.9 1.1-2.2 2.6-3.7 4.5-3.1 3.9-7.2 9.5-11.7 16.6-.9 1.4-1.7 2.8-2.6 4.3h109.6c-3.4-7.1-6.5-12.8-8.9-16.9-1.5-2.2-2.6-3.8-3.3-5z" /> <circle fill="#444" cx="76.3" cy="47.5" r="2" /> <circle fill="#444" cx="50.7" cy="47.6" r="2" /> <path fill="#444" d="M48.1 27.4c4.5 5.9 15.5 12.1 42.4 8.4-2.2-6.9-6.8-12.6-12.6-16.4C95.1 20.9 92 10 92 10c-1.4 5.5-11.1 4.4-11.1 4.4H62.1c-1.7-.1-3.4 0-5.2.3-12.8 1.8-22.6 11.1-25.7 22.9 10.6-1.9 15.3-7.6 16.9-10.2z" /> </svg>'
+            };
+        });
+
+        app.directive('loading', function () {
+            return {
+                replace: true,
+                //template: '<md-card ng-hide="dataLoaded" class="animate-show-hide md-accent" md-theme-watch="" layout="row" layout-align="center center"><md-card-content layout="column"><div layout="column" layout-align="center center" style="height: 60%;"><img src="/Content/Images/ajax-loader.gif" /><span>Loading...</span></div></md-card-content></md-card>'
+                template: '<div ng-if="!dataLoaded || isSaving" class="@Constants.Strings.AnimationClasses" layout="column" layout-align="center center" style="z-index: 999999; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; background-color: rgba(0,0,0,0.5);"></div>'
+            }
+        });
+
+        app.directive("note", function () {
+            return {
+                scope: {
+                    msg: '=?'
+                },
+                template: "<div class='noteContainer'><p><b>&nbsp;Note:</b>&nbsp;{{msg}}</p></div>"
+            };
+        });
+
+        app.service("loginService", function ($http) {
+            // login call
+            this.Login = function (User) {
+                var response = $http
+                ({
+                    method: "post",
+                    url: "/Account/AngularLogin",
+                    data: JSON.stringify(User),
+                    dataType: "json"
+                });
+                return response;
+            };
+
+            // logout call
+            this.Logout = function (User) {
+                var response = $http
+                ({
+                    method: "post",
+                    url: "/Account/LogOff"
+                });
+                return response;
+            };
+
+            this.forgotPassword = function (emailAddress) {
+                var response = $http
+                ({
+                    method: "post",
+                    url: "/Account/ForgotPasswordJson",
+                    data: { emailAddress: emailAddress },
+                    dataType: "json"
+                });
+                return response;
+            };
+        });
+
+        app.service("statsService", function ($http) {
+            // get Stats call
+            this.getGtsStats = function () {
+                var response = $http
+                ({
+                    method: "post",
+                    url: "/Home/GetGtsStats",
+                    dataType: "json"
+                });
+                return response;
+            };
+        });
+
+        app.service("openAssemblyService", function ($http) {
+            // search ProductAssemblies
+            this.searchProductAssembly = function (searchString, serialType) {
+                var response = $http
+                ({
+                    method: "get",
+                    url: "/Products/SearchProductAssemblyJson",
+                    params: { searchString: searchString, serialType: serialType },
+                    dataType: "json"
+                });
+                return response;
+            }
+
+            this.getModelsForSerial = function (serial) {
+                var response = $http
+                ({
+                    method: "get",
+                    url: "/Products/ParseScanInput",
+                    params: { input: serial },
+                    dataType: "json"
+                });
+                return response;
+            }
+
+            this.getOrCreateAssembly = function (modelId, serial) {
+                var response = $http
+                ({
+                    method: "get",
+                    url: "/Products/CreateProductAssemblyByProductModel",
+                    params: { modelId: modelId, serial: serial },
+                    dataType: "json"
+                });
+                return response;
+            }
+
+            this.getModelsForSerialFormatJson = function (serial, serialType) {
+                var response = $http
+                ({
+                    method: "get",
+                    url: "/Products/GetModelsForSerialFormatJson",
+                    params: { serial: serial, serialType: serialType },
+                    dataType: "json"
+                });
+                return response;
+            }
+
+            this.deleteAssembly = function (id) {
+                var response = $http
+                ({
+                    method: "get",
+                    url: "/Products/DeleteAssembly/" + id,
+                    dataType: "json"
+                });
+                return response;
+            }
+
+            this.getAssemblyThatReferencesThis = function (id) {
+                var response = $http
+                ({
+                    method: "get",
+                    url: "/Products/GetAssemblyThatReferencesThisJson/" + id,
+                    dataType: "json"
+                });
+                return response;
+            }
+        });
+
+        app.directive('focusMe', ['$timeout', '$parse', function ($timeout, $parse) {
+            return {
+                link: function (scope, element, attrs) {
+                    var model = $parse(attrs.focusMe);
+                    scope.$watch(model, function (value) {
+                        console.log('value=', value);
+                        if (value === true) {
+                            $timeout(function () {
+                                element[0].focus();
+                            },500);
+                        }
+                    });
+                }
+            };
+        }]);
+
+        app.directive('mdLightbox', ['$mdDialog', function($mdDialog){
+            return {
+                link: function($scope, elem, attrs){
+
+                    elem.addClass('image-click');
+
+                    elem.on('click',function(){
+                        var image = attrs.src;
+                        var title = attrs.mdLightboxTitle;
+                        showLightboxModal(image, title);
+
+                    });
+
+                    //Lightbox Modal
+                    function showLightboxModal(image, title) {
+                        var confirm = $mdDialog.confirm({
+                            templateUrl: 'lightbox-template.html',
+                            clickOutsideToClose: true,
+                            controller: lightboxController
+                        });
+
+                        $mdDialog.show(confirm);
+
+                        function lightboxController($scope, $mdDialog) {
+                            $scope.image = image;
+                            $scope.title = title;
+
+                            $scope.cancel = function() {
+                                $mdDialog.cancel();
+                            };
+
+                        }
+
+                    }
+                }
+            }
+        }]);
+
+        app.directive('ngFallbackImg', ['$timeout', function ($timeout) {
+            return {
+                restrict: 'AC',
+                scope: {},
+                link: function (scope, element, attrs) {
+                    $timeout(function () {
+                        element.bind('error', function (event) {
+                            this.style.display = "none";
+                        });
+                    }, 10);
+                }
+            };
+        }]);
+
+        app.directive('noDirtyCheck', function () {
+            // Interacting with input elements having this directive won't cause the
+            // form to be marked dirty.
+            return {
+                restrict: 'A',
+                require: 'ngModel',
+                link: function (scope, elm, attrs, ctrl) {
+                    ctrl.$pristine = false;
+                }
+            }
+        });
+
+        function DialogController($scope, $mdDialog) {
+            $scope.hide = function () {
+                $mdDialog.hide();
+            };
+            $scope.cancel = function () {
+                $mdDialog.cancel();
+            };
+            $scope.answer = function (answer) {
+                $mdDialog.hide(answer);
+            };
+            $scope.login = function () {
+                this.$mdDialog.hide({ username: this.username, password: this.password });
+            };
+        };
+
+        function dialogShowAdvanced(ev, clickOutsideToClose, template, $scope, $mdMedia, $mdDialog) {
+            {
+                var useFullScreen = ($mdMedia('sm') || $mdMedia('xs')) && $scope.customFullscreen;
+                $mdDialog.show({
+                    controller: DialogController,
+                    templateUrl: template,
+                    parent: angular.element(document.body),
+                    targetEvent: ev,
+                    clickOutsideToClose: true,
+                    fullscreen: useFullScreen,
+                    scope: $scope,
+                    preserveScope: true,
+                })
+                .then(function (answer) {
+                    $scope.status = 'You closed (and submitted?) the dialog.';
+                }, function () {
+                    $scope.status = 'You cancelled the dialog.';
+                });
+                $scope.$watch(function () {
+                    return $mdMedia('xs') || $mdMedia('sm');
+                }, function (wantsFullScreen) {
+                    $scope.customFullscreen = (wantsFullScreen === true);
+                });
+            }
+        }
+
+        function dialogShowOpenAssembly(ev, clickOutsideToClose, template, $scope, $mdMedia, $mdDialog, $mdToast) {
+            //var scope = $scope;
+
+            var useFullScreen = ($mdMedia('sm') || $mdMedia('xs')) && $scope.customFullscreen;
+            $mdDialog.show({
+                controller: ['$scope', '$mdDialog', function ($scope, $mdDialog) {
+                    $scope.hide = function () {
+                        $mdDialog.hide();
+                    };
+                    $scope.cancel = function () {
+                        $mdDialog.cancel();
+                    };
+                    $scope.answer = function (answer) {
+                        $mdDialog.hide(answer);
+                    };
+                }],
+                templateUrl: template,
+                parent: angular.element(document.body),
+                targetEvent: ev,
+                clickOutsideToClose: true,
+                fullscreen: useFullScreen,
+                scope: $scope,
+                preserveScope: true,
+                locals: {
+                    productComponent: $scope.productComponent,
+                    InstructionImage: $scope.InstructionImage
+                }
+            })
+            .then(function (answer) {
+                if (answer == "cancel") {
+                    $scope.status = 'You cancelled the dialog.';
+                }
+            }, function () {
+                $scope.status = 'You cancelled the dialog.';
+            });
+            $scope.$watch(function () {
+                return $mdMedia('xs') || $mdMedia('sm');
+            }, function (wantsFullScreen) {
+                $scope.customFullscreen = (wantsFullScreen === true);
+            });
+            // wait untill autocomplete is rendered
+            setTimeout(function () {
+                $("md-autocomplete input").focus();
+            }, 1000);
+        }
+
+        function showError(err, $scope) {
+            $scope.$parent.isSaving = false;
+            var errorText = ParseError(err);
+
+            if (errorText.includes("Row was updated or deleted by another transaction")) {
+                errorText = "This data was updated by another user. Try refreshing the page.";
+            }
+
+            if ($scope.validationMessages == undefined) {
+                $scope.validationMessages = [];
+            }
+
+            errorAlreadyDisplayed = $scope.validationMessages.find(function (searchStr) {
+                return searchStr == errorText;
+            });
+
+            if (!errorAlreadyDisplayed) {
+                $scope.validationMessages.push(errorText);
+            }
+
+            $scope.showErrorSummaryBottomSheet(null, $scope.validationMessages);
+            //$("#errorContainer").slideDown(300);
+        }
+
+        function showDialogError(err, $scope) {
+            $scope.$parent.isSaving = false;
+            var errorText = ParseError(err);
+
+            if (errorText.includes("Row was updated or deleted by another transaction")) {
+                errorText = "This data was updated by another user. Try refreshing the page.";
+            }
+
+            if ($scope.dialogActionResult == undefined) {
+                $scope.dialogActionResult = [];
+            }
+
+            errorAlreadyDisplayed = $scope.dialogActionResult.find(function (searchStr) {
+                return searchStr == errorText;
+            });
+
+            if (!errorAlreadyDisplayed) {
+                $scope.dialogActionResult.push(errorText);
+            }
+
+            $("#dialogErrorContainer").slideDown(300);
+
+            return $scope;
+        }
+
+        function hideError($scope) {
+            $scope.saveResult = [];
+            $scope.dialogActionResult = [];
+            $("#errorContainer").slideUp();
+            $("#dialogErrorContainer").slideUp();
+        }
+
+        function clearFields() {
+            window.location.reload();
+        }
+
+        function ParseError(error) {
+            if (error.data) {
+                var htmlError = jQuery(error.data);
+                title = htmlError[1];
+
+                title.text = title.text.replace("IIS 10.0 Detailed Error - 500.0 - ", "");
+
+                return title.text;
+            }
+            return error;
+        }
+
+        function Test(msg) {
+            alert(msg);
+        }
+
+        function placeFocus(selector) {
+            //alert("focus");
+            $(selector).each(function (index, element) {
+                if ($(this).val() == "") {
+                    setTimeout(function () {
+                        $(selector)[index].focus();
+                    }, 50);
+                    return false;
+                }
+            });
+        }
+    </script>
+</head>
+<body layout="row" ng-controller="AppCtrl" ng-cloak data-ng-init="initPage(); @*debugging showErrorSummaryBottomSheet(null, ['Error message one', 'Error message two']);*@" ng-disabled="!dataLoaded || isSaving">
+
+    <md-sidenav layout="column" class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="doLockOpenSideNav" ng-hide="hideSideNav" style="overflow-y: hidden;">
+        <md-toolbar class="md-tall md-hue-2">
+            <span flex></span>
+            <div layout="column" class="md-toolbar-tools-top inset">
+                @if (Request.IsAuthenticated)
+                {
+                    <div layout="column" layout-align="center center">
+                        <img src="~/Content/Images/LogoDelairSmall.png" width="250" /><br />
+                        <div class="md-caption">@User.Identity.Name</div>
+                    </div>
+                }
+                else
+                {
+                    <div ng-controller="LoginCtrl" class="md-padding dialogdemoBasicUsage" id="popupContainer" ng-cloak>
+                        <div class="dialog-demo-content" layout="column" layout-align="center center">
+                            <img src="~/Content/Images/LogoDelairSmall.png" width="250" />
+                            <md-button class="md-primary md-raised" ng-click="showAdvanced($event)">
+                                Login
+                            </md-button>
+                        </div>
+                        @if (!Request.IsAuthenticated)
+                        {
+                            <span style="display: none;" data-ng-init="checkToShowAdvanced($event)">Auto login</span>
+                        }
+                        <div ng-if="login.status" id="status">
+                            <b layout="row" layout-align="center center" class="md-padding">
+                                {{login.status}}
+                            </b>
+                        </div>
+                        <script type="text/ng-template" id="login-template.html">
+                            <md-dialog aria-label="Login" ng-controller="LoginCtrl" flex="20" flex-xs="85" ng-cloak>
+                                <form name="loginForm">
+                                    <md-toolbar>
+                                        <div class="md-toolbar-tools">
+                                            <h2>Login</h2>
+                                            <span flex></span>
+                                            <md-button ng-click="answer('cancel')" class="md-icon-button">
+                                                <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                                            </md-button>
+                                        </div>
+                                    </md-toolbar>
+                                    <md-dialog-content ng-hide="forgottenPassword">
+                                        <div id="dialogErrorContainer" class="{{loginResult == 'Success' ? 'infoContainer': 'errorContainer'}} md-padding" style="{{loginResult ? '' : 'display: none;'}}" layout="row">
+                                            <div flex>
+                                                <label>{{loginResult == 'Success' ? 'Login successful.' : 'Your login attempt has failed.'}}</label>
+                                            </div>
+                                            <div></div>
+                                        </div>
+                                    </md-dialog-content>
+                                    <md-dialog-content>
+                                        <div class="md-dialog-content">
+                                            <md-input-container class="md-block">
+                                                <label>User email</label>
+                                                <input name="username" ng-model="credentials.username" ng-model-options="{ getterSetter: true }" md-autofocus required />
+                                            </md-input-container>
+                                            <md-input-container class="md-block" ng-hide="forgottenPassword">
+                                                <label>Password</label>
+                                                <input type="password" name="password" ng-model="credentials.password" ng-model-options="{ getterSetter: true }" ng-if="!forgottenPassword" />
+                                            </md-input-container>
+                                        </div>
+                                        <div ng-hide="!forgottenPassword" class="md-padding infoContainer">
+                                            A mail will be sent to reset your password, this mail will be valid for 24 hours. If you haven't followed the instructions in that mail before the 24 hours have expired you will need to start this process over again.
+                                        </div>
+                                    </md-dialog-content>
+                                    <md-dialog-actions layout="row">
+                                        <a href="#" ng-click="forgottenPassword = true; LoginButtonText = 'Send password change email'; " ng-hide="forgottenPassword" style="text-decoration: underline;">
+                                            Forgot / change password
+                                        </a>
+                                        <span flex></span>
+                                        <md-button ng-click="answer('cancel')">
+                                            Cancel
+                                        </md-button>
+                                        <md-button type="submit" ng-click="forgottenPassword ? forgotPassword(credentials.username) :  submit();" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="loginForm.$invalid">
+                                            {{LoginButtonText}}
+                                        </md-button>
+                                    </md-dialog-actions>
+                                </form>
+                            </md-dialog>
+                        </script>
+                    </div>
+                }
+            </div>
+        </md-toolbar>
+        <md-list style="overflow-y: auto;">
+            <div ng-repeat="section in menuData" style="overflow: hidden;">
+                <md-menu-item style="border-top: 1px ridge ;" ng-hide="section.hideCaption">
+                    <md-button ng-click="toggle(section);" class="md-button-toggle" layout="row">
+                        <div layout="row" layout-align="start center">
+                            <div>
+                                {{section.caption | uppercase}}
+                            </div>
+                            <div flex></div>
+                            <ng-md-icon class="md-toggle-icon" icon="expand_more" ng-class="isOpen(section) || activeSection == section ? 'toggled' : '' " />
+                        </div>
+                    </md-button>
+                </md-menu-item>
+
+                <md-menu-item ng-repeat="page in section.pages" class="nga-fast nga-stagger-fast nga-fade-all nga-slide-up-all" ng-show="section.hideCaption || isOpen(section) || activeSection == section">
+                    @*<md-menu-item ng-repeat="page in section.pages" class="{{section.hideCaption || isOpen(section) || activeSection == section ? 'menu-toggle-list': 'menu-toggle-list toggled'}}">*@
+                    <md-button ng-if="page.action" ng-click="menuClicked(page); page.action();" class="md-secondary" ng-class="activeMenuItem == page? 'md-warn': ''">
+                        <div layout="row" layout-align="start center">
+                            <div>
+                                <md-icon md-font-set="{{page.icon}}" class="md-toggle-icon"></md-icon>
+                            </div>
+                            <div>&nbsp;{{page.caption}}</div>
+                        </div>
+                    </md-button>
+                    <md-button ng-if="!page.action" ng-click="menuClicked(page)" class="md-secondary" ng-class="activeMenuItem == page? 'md-warn': ''" ng-href="{{page.link}}">
+                        <div layout="row" layout-align="start center">
+                            <div>
+                                <md-icon md-font-set="{{page.icon}}" class="md-toggle-icon"></md-icon>
+                            </div>
+                            <div>&nbsp;{{page.caption}}</div>
+                        </div>
+                    </md-button>
+                </md-menu-item>
+                <md-menu-divider role="separator"></md-menu-divider>
+            </div>
+        </md-list>
+    </md-sidenav>
+    <div layout="column" class="relative" layout-fill role="main" style="background-color: red;">
+        <md-toolbar ng-show="displayTitleBar">
+            <div class="md-toolbar-tools">
+                <md-button ng-click="toggleSidenav('left')" ng-if="!doLockOpenSideNav" aria-label="Menu">
+                    <ng-md-icon icon="menu" md-colors="{fill: 'grey-100'}"></ng-md-icon>
+                </md-button>
+                <h3>
+                    @ViewBag.Title
+                    @*<span>Dataloaded: {{dataLoaded}}</span>
+                        <span> - </span>
+                        <span>isSaving: {{isSaving}}</span>*@
+                </h3>
+                <div flex></div>
+                <span class="@Constants.Strings.AnimationClasses" ng-if="!dataLoaded || isSaving" md-colors="{background: 'grey-100'}" layout-padding style="border-radius: 5px; font-size: 0.8em;">Loading...</span>
+            </div>
+            <md-progress-linear md-mode="indeterminate" class="md-warn @Constants.Strings.AnimationClasses" ng-if="!dataLoaded || isSaving"></md-progress-linear>
+        </md-toolbar>
+
+        <md-content flex style="overflow-y: {{scrollY}};">
+            <ui-view layout="column">
+                <div class="inset" hide-sm></div>
+                <ng-switch on="data.selectedIndex" class="tabpanel-container">
+                    <div layout="row" layout-align="center center">
+                        <div flex="{{contentWidth}}" layout-fill style="border: 0px solid green;" ng-disabled="!dataLoaded || isSaving">
+                            @RenderBody()
+                        </div>
+                    </div>
+                </ng-switch>
+            </ui-view>
+        </md-content>
+    </div>
+    <div ng-controller="AppCtrl" id="popupContainer" style="z-index: 99999;">
+        <script type="text/ng-template" id="open-assembly-template.html">
+            <md-dialog aria-label="Open or create assembly" ng-controller="AppCtrl" ng-app="GTS" flex="20" flex-xs="85" ng-cloak data-ng-init="initModelStates()" style="z-index:9999;position: absolute;">
+                <form name="componentForm" id="componentForm" ng-cloak style="z-index: 99999;">
+                    <md-toolbar>
+                        <div class="md-toolbar-tools">
+                            <h2>Open or create assembly</h2>
+                            <span flex></span>
+                            <md-button ng-click="answer('cancel')" class="md-icon-button">
+                                <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                            </md-button>
+                        </div>
+                    </md-toolbar>
+                    <md-tabs md-selected="selectedAssemblyTabIndex" md-dynamic-height>
+                        <md-tab label="Input serial" id="tbsAssemblySearch">
+                            <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                                <div flex>
+                                    <ul>
+                                        <md-item ng-repeat="error in dialogActionResult">
+                                            <li>{{error}}</li>
+                                        </md-item>
+                                    </ul>
+                                </div>
+                                <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                    <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                                </md-button>
+                            </div>
+                            <div layout="row" class="errorContainer" ng-if="error">
+                                {{error}}
+                            </div>
+                            <div class="infoContainer" layout="row" layout-align="center center">
+                                <md-icon md-font-set="fa fa-info-circle fa-2x" md-colors="{color: 'default-grey-100'}"></md-icon>
+                                <span style="margin-left: 10px;">If you enter a serial that already exists you can still create a new assembly for a different model with this serial. Simply do not make a selection from the list of serials, click next and select the correct model.</span>
+                            </div>
+                            <div layout="column" class="md-padding">
+                                <md-autocomplete name="AssemblySerial" md-floating-label="Serial" class="assemblyInputField"
+                                                 flex=""
+                                                 md-item-text="assembly.Serial"
+                                                 md-items="assembly in querySearchReferencePromiseForAssemblies(searchText, serialType)"
+                                                 md-search-text="searchText"
+                                                 md-selected-item="selectedAssembly"
+                                                 md-min-length="3"
+                                                 md-input-name="autocompleteField">
+                                    <md-item-template>
+                                        <span md-highlight-text="searchText">{{assembly.Serial}} {{assembly.PublicSerial ? " - " + assembly.PublicSerial: ""}} - {{assembly.ModelName}}</span>
+                                    </md-item-template>
+                                    <div class="md-padding" style="text-align: right;" ng-if="selectedAssembly">
+                                        Model: {{selectedAssembly.ModelName}}
+                                    </div>
+                                </md-autocomplete>
+                            </div>
+                            <div layout="row" layout-align="start center" layout-padding style="margin-top: -60px;">
+                                <md-input-container class="md-block">
+                                    <md-radio-group ng-model="serialType" layout="row" layout-align="start center" required ng-init="serialType = 1">
+                                        <md-radio-button value="1">Private serial</md-radio-button>
+                                        <md-radio-button value="2">Public serial</md-radio-button>
+                                    </md-radio-group>
+                                </md-input-container>
+                            </div>
+                            <md-dialog-actions layout="row">
+                                <md-button class="md-icon-button" ng-click="deleteAssembly($event, selectedAssembly.Id, selectedAssembly.Serial)" ng-show="selectedAssembly && authenticatedAsAdministrator">
+                                    <i class="fas fa-trash-alt" md-colors="{color: 'warn'}"></i>
+                                    <md-tooltip>Delete this assembly</md-tooltip>
+                                </md-button>
+                                <span flex></span>
+                                <md-button ng-click="answer('cancel')">
+                                    Cancel
+                                </md-button>
+                                <md-button ng-if="selectedAssembly" ng-click="navigateToAssemblyPage(selectedAssembly.Id)" style="margin-right:20px;" class="md-raised md-primary">
+                                    Go to assembly
+                                </md-button>
+                                <md-button ng-if="!selectedAssembly && serialType == 1" ng-click="showModelSelect(searchText, serialType);" ng-disabled="modelsForSerialFormat.length  < 1 || searchText == '' || componentForm.$pristine" style="margin-right:20px;" class="md-raised md-primary">
+                                    Next >>
+                                </md-button>
+                            </md-dialog-actions>
+                        </md-tab>
+                        <md-tab label="Create new" ng-disabled="disableNewAssemblyTab || selectedAssembly">
+                            <div class="md-padding" ng-if="!modelsForSerialFormat || modelsForSerialFormat.length == 0"><i>No models found for this serial number</i></div>
+                            <div ng-if="modelsForSerialFormat.length == 1">
+                                <div class="md-padding">
+                                    Create serial {{searchText}} for model {{modelsForSerialFormat[0].ModelName}}
+                                </div>
+                                <div layout="row">
+                                    <span flex></span>
+                                    <md-button ng-click="answer('cancel')">
+                                        Cancel
+                                    </md-button>
+                                    <md-button ng-click="searchText = null; previousTab();" ng-disabled="modelsForSerialFormat.length  < 1" style="margin-right:20px;" class="md-raised md-primary">
+                                        << Back
+                                    </md-button>
+                                    <md-button ng-click="createAndNavigateToAssembly(modelsForSerialFormat[0].Id, serialInput)" ng-disabled="modelsForSerialFormat[0] == null || isSaving" style="margin-right:20px;" class="md-raised md-primary">
+                                        Create new
+                                    </md-button>
+                                </div>
+                            </div>
+                            <div ng-if="modelsForSerialFormat.length > 1" flex>
+                                <div class="md-padding">
+                                    <md-radio-group name="modelSelection" ng-model="selectedModel">
+                                        <md-radio-button ng-repeat="model in modelsForSerialFormat" value="{{model.Id}}" class="md-primary">{{model.ModelName}}</md-radio-button>
+                                    </md-radio-group>
+                                </div>
+                                <div layout="row">
+                                    <span flex></span>
+                                    <md-button ng-click="answer('cancel')">
+                                        Cancel
+                                    </md-button>
+                                    <md-button ng-click="selectedModel = null; previousTab();" ng-disabled="modelsForSerialFormat.length  < 1" style="margin-right:20px;" class="md-raised md-primary">
+                                        << Back
+                                    </md-button>
+                                    <md-button ng-click="createAndNavigateToAssembly(selectedModel, serialInput)" ng-disabled="selectedModel == null" style="margin-right:20px;" class="md-raised md-primary">
+                                        Create new
+                                    </md-button>
+                                </div>
+                            </div>
+                        </md-tab>
+                    </md-tabs>
+                </form>
+            </md-dialog>
+        </script>
+    </div>
+    <script type="text/ng-template" id="scaninput-template.html">
+        <md-bottom-sheet class="md-list md-has-header" ng-controller="AppCtrl">
+
+            <md-item-content flex class="inset">
+                <div flex layout="row">
+                    <div flex layout="column">
+                        <div flex layout="column" layout-align="center center" ng-if="scanError">
+                            <h4 class="md-display-2">Error</h4>
+                            <div layout="row">
+                                <span class="md-title">The system detected the following scan input: <b>{{scanError}}</b>.</span>
+                            </div>
+                        </div>
+                        <div flex layout="column" layout-align="center center">
+                            <h4 class="md-display-2">Scan input</h4>
+                            <div layout="row">
+                                <span class="md-title">The system detected the following scan input: <b>{{serial}}</b>.</span>
+                                <span class="md-title" ng-show="hits.length > 1">&nbsp;Select an option and press the play button<br /><br /></span>
+                            </div>
+                        </div>
+                        <div layout="row" layout-align="center center" ng-show="hits.length > 1">
+                            <div layout="column">
+
+                                <md-radio-group ng-model="dataType" ng-show="hits.length > 1">
+                                    <md-radio-button ng-repeat="hit in hits" value="{{hit.Id}}" class="md-primary md-display-1">{{hit.ModelName}}</md-radio-button>
+                                </md-radio-group>
+                                <div class="md-title" ng-hide="hits.length > 1">{{hits[0].ModelName}}</div>
+                            </div>
+                            <div layout="column" layout-align="end center" ng-if="hits && hits.length > 0">
+                                <md-button ng-click="createAndNavigateToAssembly(dataType, serial)" class="md-primary md-hue-1">
+                                    <ng-md-icon icon="play_arrow" size="150" md-colors="{fill: 'accent-800'}"></ng-md-icon>
+                                </md-button>
+                            </div>
+                        </div>
+                        <div layout="row" ng-show="hits.length == 1">
+                            <div flex></div>
+                            <div flex="60" layout="column">
+                                {{hits[0].ModelName}} - {{serial}}
+                                <md-progress-linear md-mode="indeterminate" class="md-warn"></md-progress-linear>
+                            </div>
+                            <div flex></div>
+                        </div>
+                        <div layout="column" flex ng-show="hits == null || hits.length == 0" class="md-display-2" layout-align="center center">{{error}}</div>
+                    </div>
+                    <div layout="column" layout-align="start end">
+                        <md-button ng-click="hideBottomSheet()" md-no-ink class="md-icon-button">
+                            <ng-md-icon icon="close"></ng-md-icon>
+                        </md-button>
+                    </div>
+                </div>
+            </md-item-content>
+        </md-bottom-sheet>
+    </script>
+
+    <script type="text/ng-template" id="ErrorSummary-Template.html">
+        <md-bottom-sheet class="md-list md-has-header" ng-controller="AppCtrl" md-colors="{color: 'warn'}" layout="row" layout-align="center start" layout-padding style="z-index: 99999999;">
+            <md-icon md-font-set="fa fa-exclamation-triangle fa-6x" style="margin-top: 20px;"></md-icon>
+            <div layout="column" layout-align="center center" style="width: 100%;">
+                <div layout="row" layout-align="start center" layout-padding style="width: 100%;">
+
+                    <div class="md-display-2" md-colors="{color: 'accent'}">Error summary</div>
+                    <div flex></div>
+                    <md-button ng-click="hideBottomSheet()" md-no-ink class="md-icon-button">
+                        <md-icon md-font-set="fa fa-times"></md-icon>
+                    </md-button>
+                </div>
+                <div layout="row" layout-align="start center" layout-padding style="width: 100%;">
+                    <hr style="width: 100%; height: 1px; border: 0px; border-top: 1px solid orange;" />
+                </div>
+                <div layout="row" layout-align="center start" style="width: 100%;">
+                    <div flex="5"></div>
+                    <div flex layout="column" layout-align="center start">
+                        <ul>
+                            <li md-colors="{color: 'accent'}" ng-repeat="msg in ValidationMessages">
+                                {{msg}}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </md-bottom-sheet>
+    </script>
+
+    <script type="text/ng-template" id="lightbox-template.html">
+        <md-dialog aria-label="Screenshot">
+            <md-dialog-content>
+                <md-button class="md-icon-button" aria-label="Close" alt="Close" ng-click="cancel()" md-colors="{color: 'accent'}" style="position: absolute; top: 10px; right: 20px;">
+                    <md-icon md-font-set="fas fa-times-circle fa-2x" />
+                </md-button>
+                <img ng-src="{{image}}" alt="{{title}}" class="demo-image">
+            </md-dialog-content>
+        </md-dialog>
+    </script>
+    <script type="text/ng-template" id="toast-template.html">
+        <md-toast>
+            <span class="md-toast-text" flex>{{content}}</span>
+            <ng-md-icon ng-if="icon" icon="{{icon}}" md-colors="{fill: '{{iconColor}}'}"></ng-md-icon>
+        </md-toast>
+    </script>
+    <script type="text/ng-template" id="pagination-template.html">
+        <style>
+            .paginationContainer {
+                /*border: 1px solid rgb(196, 196, 196);*/
+                /*width: 100%;*/
+            }
+
+                .paginationContainer:hover {
+                    /*box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);*/
+                    transform: scale(1.01, 1.01);
+                }
+
+            .easeIn {
+                transition: all 0.1s ease-in-out;
+            }
+
+                .easeIn:hover {
+                    transition: all 0.25s ease-in-out;
+                }
+
+            .pagination {
+                margin: 0px;
+                width: 40px;
+                height: 40px;
+                margin-left: -1px;
+                color: #ff9933;
+                float: left !important;
+                font-size: 0.8em;
+            }
+
+                .pagination.hover {
+                    cursor: pointer;
+                }
+
+                .pagination svg {
+                    fill: #ff9933;
+                }
+
+                .pagination.selected {
+                    background-color: #ff9933;
+                    color: white;
+                    font-weight: bold;
+                }
+
+                .pagination.hover:hover > div {
+                    box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);
+                }
+
+                .pagination.hover:hover {
+                    background-color: #ff6633;
+                    color: white;
+                    font-weight: bold;
+                }
+
+                .pagination:hover svg {
+                    fill: white;
+                }
+        </style>
+        <md-card layout="row" flex layout-align="center center" data-ng-init="" class="paginationContainer easeIn" ng-if="noOfItems > entryLimit">
+            <div class="pagination" layout="row" hide show-gt-sm flex layout-align="center center">
+                {{((entryLimit * currentPage) - entryLimit) + 1}} to {{entryLimit * currentPage}}
+            </div>
+            <div style="padding: 0px;" hide show-gt-xs>
+                <md-menu>
+                    <div class="pagination hover" show-gt-sm ng-click="$mdMenu.open($event);" layout="row" layout-align="center center" style="width: 150px;" data-ng-init="pagingSize = [5,10,20,50,100]">
+                        <ng-md-icon icon="settings" md-menu-origin md-menu-align-target></ng-md-icon>
+                        <span>&nbsp;Page size: {{entryLimit}}</span>
+                    </div>
+                    <md-menu-content width="2">
+                        <div layout-padding md-theme="docsDark">Page sizes</div>
+                        <md-menu-item layout="column" ng-repeat="size in pagingSize">
+                            <md-button ng-click="setEntryLimit(size);">
+                                {{size}}
+                            </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </div>
+            <div class="pagination hover" layout="row" layout-align="center center" ng-click="selectPage(1);"><ng-md-icon icon="skip_previous" /></div>
+            <div class="pagination hover" layout="row" layout-align="center center" ng-click="currentPage > 1 ? currentPage = currentPage -1: currentPage = 1"><ng-md-icon icon="fast_rewind" /></div>
+            <div layout="row" layout-align="center center" ng-repeat="page in getPageNumberArray() track  by $index" class="{{$index +1 === currentPage ? 'selected':' ' }} pagination hover" layout-fill ng-click="selectPage(page);">{{page}}</div>
+            <div class="pagination hover" layout="row" layout-align="center center" ng-click="currentPage  < noOfPages  ? currentPage = currentPage +1: currentPage = noOfPages"><ng-md-icon icon="fast_forward" /></div>
+            <div class="pagination hover" layout="row" layout-align="center center" ng-click="selectPage(noOfPages);"><ng-md-icon icon="skip_next" /></div>
+            <div class="pagination" layout="row" hide show-gt-xs layout-align="center center" style="width: 150px;">
+                Total items: {{noOfItems}}
+            </div>
+            <div class="pagination" layout="row" hide show-gt-sm flex layout-align="center center">
+                Total pages: {{noOfPages}}
+            </div>
+        </md-card>
+    </script>
+</body>
+</html>

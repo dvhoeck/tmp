@@ -1,0 +1,1006 @@
+﻿@{
+    ViewBag.Title = "Test";
+}
+
+<script>
+    
+
+    app.controller('RoleCtrl', ['$scope', '$http', '$mdDialog', '$mdMedia', '$mdToast', '$location', '$q', '$scope', 'filterFilter', 'assemblyService', '$rootScope',
+        function ($scope, $http, $mdDialog, $mdMedia, $mdToast, $location, $q, $scope, filterFilter, assemblyService, $rootScope) {
+            $scope.InBatchMode = false;
+            $scope.on = false;
+
+            $scope.assemblies = [
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+                { ProductSerial: 'BLABLEBLA' },
+            ]
+            
+            $scope.initAssemblyList = function () {
+                // DEV 
+                return;
+                
+                $scope.$parent.dataLoaded = false;
+                $scope.paginationReady = false;
+                assemblyService.getAssemblies(($scope.startDate != null ? $scope.startDate.getFullYear() + "-" + ($scope.startDate.getMonth() + 1) + "-" + $scope.startDate.getDate() : ""), ($scope.endDate != null ? $scope.endDate.getFullYear() + "-" + ($scope.endDate.getMonth() + 1) + "-" + $scope.endDate.getDate() : ""), $scope.dataType, 1).then(function (result) {
+                    hideError($scope);
+                    $scope.assemblies = JSON.parse(result.data);
+                    $scope.$parent.dataLoaded = true;
+                    showToast("Assemblies retrieved.", $mdToast);
+                }, function (err) {
+                    showError(err.statusText, $scope);
+                });
+            }
+
+            $scope.testData = function (data) {
+                console.log(data);
+            }
+        }]);
+
+    app.service("assemblyService", function ($http) {
+        // get products
+        this.getProductAssembly = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/GetProductAssemblyJson/" + id,
+                dataType: "json"
+            });
+            return response;
+        }
+
+        this.updateComponentAssembly = function (component) {
+            var response = $http
+            ({
+                method: "post",
+                url: "/Products/UpdateComponentAssembly",
+                dataType: "json",
+                data: {
+                    objectAsString: JSON.stringify(component)
+                }
+            });
+            return response;
+        }
+
+        this.updateComponentAssemblies = function (assemblySerials, componentAssembly) {
+            var response = $http
+            ({
+                method: "post",
+                url: "/Products/UpdateComponentAssemblies",
+                dataType: "json",
+                data: {
+                    objectAsString: JSON.stringify({ assemblySerials: assemblySerials, componentAssembly: componentAssembly })
+                }
+            });
+
+            return response;
+        }
+
+        this.updateAssembly = function (assembly) {
+            var response = $http
+            ({
+                method: "post",
+                url: "/Products/UpdateAssembly",
+                dataType: "json",
+                data: {
+                    objectAsString: JSON.stringify(assembly)
+                }
+            });
+            return response;
+        }
+
+        this.putAssemblyInRemark = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Remark/AddRemarkToAssembly/" + id,
+                dataType: "json"
+            });
+            return response;
+        }
+
+        this.deportToState = function (id, toNextState, batchModeItems) {
+            var response = $http
+            ({
+                method: "post",
+                url: "/Products/DeportToState/",
+                dataType: "json",
+                data: {
+                    id: id, toNextState: toNextState, batchModeItems: JSON.stringify(batchModeItems)
+                }
+            });
+            return response;
+        }
+
+        this.deliver = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/Deliver/",
+                dataType: "json",
+                params: {
+                    id: id
+                }
+            });
+            return response;
+        }
+
+        this.scrap = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/Scrap/" + id,
+                dataType: "json"
+            });
+            return response;
+        }
+
+        this.unScrap = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/UnScrap/" + id,
+                dataType: "json"
+            });
+            return response;
+        }
+
+        this.getAssemblies = function (start, end, dataType, modelType) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/GetAssembliesJson",
+                dataType: "json",
+                params: {
+                    start: start, end: end, dataType: dataType, modelType: modelType
+                }
+            });
+            return response;
+        }
+
+        this.deleteAssembly = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/DeleteAssembly/" + id,
+                dataType: "json"
+            });
+            return response;
+        }
+
+        this.getAssemblyThatReferencesThis = function (id) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/GetAssemblyThatReferencesThisJson/" + id,
+                dataType: "json"
+            });
+            return response;
+        }
+
+        this.addNote = function (id, text) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/AddNote/",
+                dataType: "json",
+                params: {
+                    assemblyId: id, text: text
+                }
+            });
+            return response;
+        }
+
+        this.createQC = function (componentAssemblyId, qCModelIdq) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/CreateQCAssembly/",
+                dataType: "json",
+                params: {
+                    componentAssemblyId: componentAssemblyId, qCModelIdq: qCModelIdq
+                }
+            });
+            return response;
+        }
+
+        this.getQCsForBaseModelId = function (productComponentId, productAssemblyId) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/GetQCsForBaseModelId/",
+                dataType: "json",
+                params: {
+                    productComponentId: productComponentId, productAssemblyId: productAssemblyId
+                }
+            });
+            return response;
+        }
+
+        this.rollBackToState = function (assemblyId, stateIndex) {
+            var response = $http
+            ({
+                method: "get",
+                url: "/Products/RollBackToState/",
+                dataType: "json",
+                params: {
+                    assemblyId: assemblyId, stateIndex: stateIndex
+                }
+            });
+            return response;
+        }
+
+        this.validateBatchSerials = function (mainProductSerial, baseModelId, serialsAsString) {
+            var response = $http
+               ({
+                   method: "post",
+                   url: "/Products/ValidateBatchSerials/",
+                   dataType: "json",
+                   data: {
+                       mainProductSerial: mainProductSerial,
+                       baseModelId: baseModelId,
+                       serialsAsString: serialsAsString
+                   }
+               });
+            return response;
+        }
+
+        this.updateBatchSerial = function (ProductSerial, baseModelId, componentId, value) {
+            var response = $http
+                   ({
+                       method: "post",
+                       url: "/Products/UpdateBatchSerial/",
+                       dataType: "json",
+                       data: {
+                           ProductSerial: ProductSerial,
+                           baseModelId: baseModelId,
+                           componentId: componentId,
+                           value: value
+                       }
+                   });
+            return response;
+        }
+    });
+
+
+    
+</script>
+
+
+
+<div ng-controller="RoleCtrl" data-ng-init="initAssemblyList();">
+    <div>
+        <div dvh-pagination data="assemblies"></div>
+        <input type="text" ng-model="search" placeholder="Search" /><br />
+        <br />
+        <ul>
+            <li ng-repeat="data in filtered | startFrom:(currentPage-1)*entryLimit | limitTo:entryLimit">{{data.ProductSerial}}</li>
+        </ul>
+    </div>
+    <br />
+    <div dvh-pagination data="assemblies"></div>
+    <!--<div dvh-pagination data="list"></div>-->
+    <h4>default</h4>
+    <md-content layout="row" md-theme="default">
+        <md-button class="md-primary md-raised" ng-click="testData(data);">
+            md-primary
+        </md-button>
+
+        <md-button class="md-accent md-raised">
+            md-accent
+        </md-button>
+
+        <md-button class="md-warn md-raised">
+            md-warn
+        </md-button>
+    </md-content>
+
+
+    <h4>docsDark</h4>
+
+    <md-content layout="row" md-theme="docsDark">
+        <md-button class="md-primary md-raised">
+            md-primary
+        </md-button>
+
+        <md-button class="md-accent md-raised">
+            md-accent
+        </md-button>
+
+        <md-button class="md-warn md-raised">
+            md-warn
+        </md-button>
+    </md-content>
+
+
+    <h4>docsLight</h4>
+    <md-content layout="row" md-theme="docsLight">
+
+        <md-button class="md-primary md-raised">
+            md-primary
+        </md-button>
+
+        <md-button class="md-accent md-raised">
+            md-accent
+        </md-button>
+
+        <md-button class="md-warn md-raised">
+            md-warn
+        </md-button>
+    </md-content>
+
+    <div md-theme="docsDark" layout="column">
+        <span>docsDark 1</span>
+        <md-button class="md-primary md-raised">Test 1</md-button>
+    </div>
+    <div md-theme="default" layout="column">
+        <span>default 2</span>
+        <md-button class="md-primary md-raised">Test 2</md-button>
+    </div>
+
+    <md-card name="User name" layout-padding theme="default"><md-content>qdsqd</md-content></md-card>
+    <md-card name="User name" layout-padding theme="docsDark"><md-content>qdsqd</md-content></md-card>
+    <md-card name="User name" layout-padding theme="docsLight"><md-content>qdsqd</md-content></md-card>
+    
+    
+    <ul>
+        <li ng-repeat="data in filtered">{{data.name}}</li>
+    </ul>
+</div>

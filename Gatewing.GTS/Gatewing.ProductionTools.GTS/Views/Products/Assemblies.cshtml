@@ -1,0 +1,210 @@
+﻿@{
+
+    ViewBag.Title = "Assemblies";
+
+}
+
+<style>
+    .cornerIcon {
+        transform: rotate(45deg);
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        z-index: 0;
+        top: -40px;
+        left: -40px;
+        z-index: 1;
+    }
+
+        .cornerIcon a {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            margin-top: -6px;
+            transform: rotate(-45deg);
+        }
+
+    md-card {
+        overflow: hidden;
+        position: relative;
+    }
+
+    sup { 
+      vertical-align: super;
+      font-size: 0.5em;
+    }
+</style>
+
+<div ng-controller="AssemblyCtrl" ng-app="GTS" data-ng-init="setContentWidth(90);initData();">
+    <md-list>
+        <md-card>
+            <md-card-content layout-xs="column" layout-align="center center">
+                <div layout="row" layout-align="center center">
+                    <md-input-container class="md-padding">
+                        <md-button class="md-button-toggle md-fab md-mini md-button md-ink-ripple" ng-class="showMoreFilterOptions ? 'toggled': ''" ng-click="showMoreFilterOptions = !showMoreFilterOptions">
+                            <div layout="row" layout-align="center center">
+
+                                <ng-md-icon class="md-toggle-icon" icon="expand_more" ng-class="showMoreFilterOptions ? 'toggled': ''" />
+                            </div>
+                            <md-tooltip>Click to show more filter options</md-tooltip>
+                        </md-button>
+                    </md-input-container>
+                    <div flex-gt-xs="5"></div>
+                    <md-input-container class="md-padding" flex-gt-xs>
+                        <label>Filter</label>
+                        <input type="text" ng-model="search" id="filterField" focus-me="true">
+                    </md-input-container>
+                    <md-input-container class="md-padding">
+                        <label>Start</label>
+                        <md-datepicker ng-model="startDate" md-placeholder="Enter start date" ng-change="initAssemblyList()"></md-datepicker>
+                    </md-input-container>
+                    <md-input-container class="md-padding">
+                        <label>End</label>
+                        <md-datepicker ng-model="endDate" md-placeholder="Enter end date" ng-change="initAssemblyList()"></md-datepicker>
+                    </md-input-container>
+                </div>
+                <div layout="row" layout-xs="column" class="@Constants.Strings.AnimationClasses" ng-show="showMoreFilterOptions">
+                    <md-input-container>
+                        <label>Model type</label><br /><br />
+                        <md-radio-group ng-model="modelType" ng-change="initAssemblyList()" layout="row" class="md-caption">
+                            <md-radio-button value="0" class="md-primary">All</md-radio-button>
+                            <md-radio-button value="1">Standard</md-radio-button>
+                            <md-radio-button value="2">Auto Created</md-radio-button>
+                            <md-radio-button value="4">Quality Check</md-radio-button>
+                        </md-radio-group>
+                    </md-input-container>
+                    <md-input-container>
+                        <div layout="row">
+                            <div><span hide-xs="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+                            <div layout="column">
+                                <label><span hide-xs="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Assembly state</label><br /><br />
+                                <md-radio-group ng-model="dataType" ng-change="initAssemblyList()" layout="row" class="md-caption">
+                                    <md-radio-button value="all" class="md-primary">All</md-radio-button>
+                                    <md-radio-button value="unfinished">Unfinished</md-radio-button>
+                                    <md-radio-button value="finished">Finished</md-radio-button>
+                                    <md-radio-button value="remark">In remark</md-radio-button>
+                                </md-radio-group>
+                            </div>
+                        </div>
+                    </md-input-container>
+                </div>
+            </md-card-content>
+        </md-card>
+        <div dvh-pagination data="assemblies"></div>
+        <loading></loading>
+        <md-item ng-repeat="assembly in filtered | startFrom:(currentPage-1)*entryLimit | limitTo:entryLimit track by assembly.Id" class="@Constants.Strings.AnimationClasses" ng-mouseenter="hover = true" ng-mouseleave="hover = false" ng-hide="assembly.EndDate.substring(0,4) == '9999' && dataType == 'unfinished'">
+            <md-card class="md-accent" md-theme-watch="" layout="row">
+                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                    <a href="/Products/Assembly/{{assembly.Id}}" style="cursor: pointer;">
+                        <md-tooltip md-direction="top">Open assembly page</md-tooltip>
+                        <ng-md-icon icon="build" aria-label="Continue assembly"></ng-md-icon>
+                    </a>
+                </md-card-actions>
+                <md-card-title layout="row" layout-align="center start" flex-gt-xs="90">
+                    <md-card-title-text hide-xs>
+                        <div layout="column">
+                            <div layout="row" layout-align="center end">
+                                <div layout="column">
+                                    @*<div class="md-title" layout="row" layout-align="start end" ng-if="assembly.PublicProductSerial">
+                                        {{assembly.ProductSerial}} - {{assembly.Name}} {{assembly.PublicProductSerial}}<sup>public serial</sup>
+                                    </div>*@
+                                    <div class="md-title" ng-if="assembly.PublicProductSerial">
+                                        {{assembly.ProductSerial}} - {{assembly.PublicProductSerial}}&nbsp;<sup md-colors="{color: 'warn'}">public</sup> - {{assembly.Name}}
+                                    </div>
+                                    <span class="md-title" layout="row" layout-align="start end" ng-if="!assembly.PublicProductSerial">
+                                        {{assembly.ProductSerial}} - {{assembly.Name}}
+                                    </span>
+                                    <span class="md-subhead">
+                                        Started: {{assembly.StartDate.replace("T", " ")}}{{assembly.EndDate.substring(0,4) == "9999" ? "" : " - Last edit: " + assembly.EndDate.replace("T", " ")}}
+                                    </span>
+                                </div>
+                                <span flex></span>
+                                <div layout="column">
+                                    <span class="md-subhead">
+                                        Started by: {{assembly.StartedBy}}
+                                    </span>
+                                    <span class="md-subhead">
+                                        Last edited: {{assembly.EditedBy}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div layout="row" layout-align="center center">
+                                <div class="configContainer" style="background-color: {{config.Color}}; min-width: 60px; font-size: 0.7em;" ng-repeat="config in assembly.ProductModelConfigurations |  orderBy: 'ConfigIndex'" ng-show="config.Name != 'default'" layout-align="center center" md-truncate>{{config.Name}}<md-tooltip>{{config.Name}}</md-tooltip></div>
+                                <md-progress-linear md-mode="determinate" class="md-warn" value="{{assembly.Progress}}" ng-hide="assembly.ProductModel.AutoCreate"></md-progress-linear>
+                                <span>&nbsp;{{assembly.EndDate.substring(0,4) == "9999" ? 100 : assembly.Progress}}%{{assembly.ProductModel.AutoCreate}}</span>
+                            </div>
+                            <div layout="row" layout-align="start center" layout-padding>
+                            </div>
+                        </div>
+                    </md-card-title-text>
+                    <md-card-title-text hide-gt-xs>
+                        <div layout="column" layout-align="center center">
+                            <div layout="column">
+                                <span class="md-subhead">
+                                    {{assembly.ProductSerial}} - {{assembly.Name}}
+                                </span>
+                                <span class="md-caption">
+                                    Started: {{assembly.StartDate.replace("T", " ")}}{{assembly.EndDate.substring(0,4) == "9999" ? "" : " - Last edit: " + assembly.EndDate.replace("T", " ")}}
+                                </span>
+                            </div>
+                            <span flex></span>
+                            <div layout="column">
+                                <span class="md-caption">
+                                    Start:<br /> {{assembly.StartedBy}}
+                                </span>
+                                <span class="md-caption">
+                                    Edit:<br /> {{assembly.EditedBy}}
+                                </span>
+                            </div>
+                        </div>
+                        <div layout="row" layout-align="center center">
+                            <md-progress-linear md-mode="determinate" class="md-warn" value="{{assembly.Progress}}" ng-hide="assembly.ProductModel.AutoCreate"></md-progress-linear>
+                            &nbsp;{{assembly.EndDate.substring(0,4) == "9999" ? 100 : assembly.Progress}}%{{assembly.ProductModel.AutoCreate}}
+                        </div>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-actions layout="row" layout-align="center center" flex="5" layout-align-xs="center start">
+                    <md-menu md-position-mode="target-right target">
+                        <md-button aria-label="Open product model menu" class="md-icon-button" ng-click="$mdMenu.open($event)">
+                            <ng-md-icon icon="more_vert"></ng-md-icon>
+                        </md-button>
+                        <md-menu-content>
+                            <md-menu-item>
+                                <md-button class="md-secondary" ng-href="/Remark/Remark/{{assembly.Id}}">
+                                    <div layout="row" layout-align="start center">
+                                        <div>
+                                            <md-icon md-font-set="fa fa-fw fa-eye" class="md-toggle-icon"></md-icon>
+                                        </div>
+                                        <div>&nbsp;View remarks</div>
+                                    </div>
+                                </md-button>
+                            </md-menu-item>
+                            @if (User.IsInRole("Administrators"))
+                            {
+                                <md-menu-item>
+                                    <md-button class="md-secondary" ng-click="doDeleteAssembly($event, assembly.Id, assembly.ProductSerial)">
+                                        <div layout="row" layout-align="start center">
+                                            <div>
+                                                <md-icon md-font-set="fa fa-fw fa-trash" class="md-toggle-icon"></md-icon>
+                                            </div>
+                                            <div>&nbsp;Delete assembly</div>
+                                        </div>
+                                    </md-button>
+                                </md-menu-item>
+                            }
+                        </md-menu-content>
+                    </md-menu>
+                </md-card-actions>
+                <div class="cornerIcon" md-colors="{background: 'warn'}" ng-if="assembly.HasOpenRemark">
+                    <a ng-href="/Remark/Remark/{{assembly.Id}}" target="_blank">
+                        <i class="fas fa-microscope" md-colors="{color: 'grey-A100'}"></i>
+                    </a>
+                    <md-tooltip>{{assembly.ProductSerial}} - {{assembly.Name}} has one or more open remarks</md-tooltip>
+                </div>
+            </md-card>
+        </md-item>
+        <div dvh-pagination data="assemblies"></div>
+    </md-list>
+</div>
+<script src="~/Scripts/Views/AssemblyScript.js?@DateTime.Now.Ticks.ToString()"></script>
+@*<script src="~/Scripts/Views/AssemblyScript.js"></script>*@

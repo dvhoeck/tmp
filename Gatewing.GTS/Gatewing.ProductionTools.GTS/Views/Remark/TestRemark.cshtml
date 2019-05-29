@@ -1,0 +1,101 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>TestRemark</title>
+    <link href="~/Content/angular-material.min.css" rel="stylesheet" />
+    <link href="~/Content/docs.css" rel="stylesheet" />
+    <link href="~/Content/roboto.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/Content/lf-ng-md-file-input.css" />
+    <link rel="stylesheet" href="~/Content/Site.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Angular Material Dependencies -->
+    <script src="~/Scripts/angular.min.js"></script>
+        
+
+    <script>
+        var app = angular.module('GTS', []);
+        app.controller('RemarkCtrl', ['$scope', function ($scope) {
+            $scope.status = '  ';
+            //alert("nah");
+            var myData = [
+             {
+                 name: 'testing',
+                 plan_key: 5,
+                 start_date: '7/3/2014',
+                 start_time: '8:00',
+                 end_time: '18:00'
+             },
+             {
+                 name: 'Test 2',
+                 plan_key: 8,
+                 start_date: '7/4/2014',
+                 start_time: '8:00',
+                 end_time: '18:00'
+             },
+             {
+                 name: 'Test 10',
+                 plan_key: 10,
+                 start_date: '7/8/2014',
+                 start_time: '8:00',
+                 end_time: '18:00'
+             }
+            ];
+
+            $scope.myData = {
+                doClick: function () {
+                    // intended to be the ajax request, just doing the data assignment though.
+                    $scope.myData.result = myData;
+                }
+            };
+
+            $scope.addItem = function () {
+                alert("hier");
+                myData.push({
+                    name: 'Test 20',
+                    plan_key: 20,
+                    start_date: 's7/8/2014',
+                    start_time: '8:00',
+                    end_time: '18:00'
+                });
+                alert(myData.length);
+                $scope.myData.result = myData;
+                
+            }
+
+        }]);
+
+    </script>
+</head>
+<body ng-app="GTS">
+    <div ng-controller="RemarkCtrl">
+        <button  ng-click="addItem()">dkjqslkd</button>
+
+        <table data-ng-init="myData.doClick()">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Start Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="data in myData.result">
+                    <td>{{data.name}}</td>
+                    <td>{{data.start_date}}</td>
+                    <td>{{data.start_time}}</td>
+                    <td>{{data.end_time}}</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+</body>
+</html>

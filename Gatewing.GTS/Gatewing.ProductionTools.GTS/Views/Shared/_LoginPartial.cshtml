@@ -1,0 +1,134 @@
+﻿@using Microsoft.AspNet.Identity
+@if (Request.IsAuthenticated)
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    {
+        @Html.AntiForgeryToken()
+        <!--
+        <ul class="nav navbar-nav navbar-right">
+            <li>
+                @Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+            </li>
+            <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
+        </ul>-->
+    }
+}
+else
+{
+    <!--
+    <ul class="nav navbar-nav navbar-right">
+        <li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
+        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    </ul>
+    -->
+}
+<div ng-app="App" ng-controller="LoginCtrl" class="md-padding dialogdemoBasicUsage" id="popupContainer" ng-cloak>
+    <div class="dialog-demo-content" layout="row" layout-wrap layout-margin layout-align="center">
+        <md-button class="md-primary md-raised" ng-click="login.showDialog($event)">
+            Login
+        </md-button>
+    </div>
+    <div hide-gt-sm layout="row" layout-align="center center" flex>
+        <md-checkbox ng-model="login.customFullscreen" aria-label="Fullscreen Custom Dialog">Force Custom Dialog Fullscreen</md-checkbox>
+    </div>
+
+    <div ng-if="login.status" id="status">
+        <b layout="row" layout-align="center center" class="md-padding">
+            {{login.status}}
+        </b>
+    </div>
+
+    <script type="text/ng-template" id="login-dialog.template.html">
+        <md-dialog id="login-dialog" aria-label="Login" ng-cloak>
+            <form name="loginForm" ng-submit="dialog.login()">
+                <md-toolbar>
+                    <div class="md-toolbar-tools">
+                        <h2>Log In</h2>
+                        <span flex></span>
+                        <md-button class="md-icon-button" ng-click="dialog.close()">
+                            <md-icon md-svg-src="img/icons/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+
+                <md-dialog-content>
+                    <div class="md-dialog-content">
+                        <md-input-container class="md-block">
+                            <label>Username</label>
+                            <input name="username" ng-model="dialog.username" md-autofocus required />
+                        </md-input-container>
+                        <md-input-container class="md-block">
+                            <label>Password</label>
+                            <input type="password" name="password" ng-model="dialog.password" required />
+                        </md-input-container>
+                    </div>
+                </md-dialog-content>
+
+                <md-dialog-actions layout="row">
+                    <a href="" class="md-primary">Forgot Password?</a>
+                    <span flex></span>
+                    <md-button type="submit" ng-disabled="loginForm.$invalid" class="md-raised md-primary">Login</md-button>
+                </md-dialog-actions>
+            </form>
+        </md-dialog>
+    </script>
+</div>
+<script>
+
+    /*
+    class AppController {
+        status = '';
+        customFullscreen;
+        constructor(private $scope, private $mdDialog, private $mdMedia, private $mdToast) {
+            this.customFullscreen = this.$mdMedia('xs') || this.$mdMedia('sm');
+        }
+
+        showDialog(event) {
+            var useFullScreen = (this.$mdMedia('sm') || this.$mdMedia('xs')) && this.customFullscreen;
+
+            this.$mdDialog.show({
+                controller: LoginDialogController,
+                controllerAs: 'dialog',
+                templateUrl: 'login-dialog.template.html',
+                parent: angular.element(document.body),
+                targetEvent: event,
+                clickOutsideToClose: true,
+                fullscreen: useFullScreen
+            })
+            .then(credentials => this.showToast(`Thanks for logging in, ${credentials.username}.`),
+              () => this.showToast('You canceled the login.'));
+
+            this.$scope.$watch(() => this.$mdMedia('xs') || this.$mdMedia('sm'),
+              wantsFullScreen => this.customFullscreen = wantsFullScreen === true);
+        }
+
+        showToast(content: string) {
+            this.$mdToast.show(
+              this.$mdToast.simple()
+                .content(content)
+                .position('top right')
+                .hideDelay(3000)
+            );
+        }
+        }
+
+        class LoginDialogController {
+            username: string;
+            password: string;
+
+          constructor(private $mdDialog) { }
+
+        hide() {
+            this.$mdDialog.hide();
+        }
+
+        close() {
+            this.$mdDialog.cancel();
+        }
+
+        login() {
+            this.$mdDialog.hide({username: this.username, password: this.password});
+        }
+    }
+    */
+</script>

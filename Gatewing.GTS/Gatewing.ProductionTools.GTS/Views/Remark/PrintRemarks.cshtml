@@ -1,0 +1,159 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Print remark labels</title>
+
+    <link rel="stylesheet" href="~/Content/Site.css">
+
+    <!-- Angular Material Dependencies -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular.min.js"></script>
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+
+    <script>
+
+        var app = angular.module('MyApp', []).controller('AppCtrl', ['$scope', 'remarkService', function ($scope, remarkService) {
+            $scope.id = function ($scope, $location) {
+                urlEnding = window.location.toString().split("/")[window.location.toString().split("/").length - 1];
+
+                if (urlEnding.indexOf("?") > -1) {
+                    // split to check for QC indication
+                    splitUrlEnding = urlEnding.split("?");
+                    qcIndicator = splitUrlEnding[1];
+
+                    // verify indicator
+                    if (qcIndicator.indexOf("=") > -1) {
+                        $mdSidenav('left').close();
+                    }
+
+                    return splitUrlEnding[0];
+                } else {
+                    return urlEnding;
+                }
+            };
+
+            $scope.initPrintRemarks = function () {
+                //$scope.setScrollY(false);
+                //$scope.hideTitleBar();
+                remarkService.printRemarks($scope.id()).then(function (response) {
+                    $scope.remarksForPrint = JSON.parse(response.data);
+
+                    setTimeout(function () {
+                        window.print();
+                    }, 1000);
+                });
+            };
+
+        }]).service("remarkService", function ($http) {
+            this.printRemarks = function (id) {
+                var response = $http({
+                    method: "get",
+                    url: "/Remark/PrintRemarksJSON/" + id,
+                    dataType: "json"
+                });
+                return response;
+            }
+        });
+    </script>
+
+    <style>
+        @@media print {
+            html, body {
+                margin: 2mm 2mm 2mm 2mm;
+                font-size: 0.9em;
+                height: 50%;
+            }
+
+            .rotated {
+                -ms-transform: rotate(270deg); /* IE 9 */
+                -webkit-transform: rotate(270deg); /* Safari */
+                transform: rotate(90deg);
+                transform-origin: 0% 0%;
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+
+            .printContainer {
+                padding: 0px;
+                margin: 0px;
+                font-size: 0.8em;
+            }
+
+            .noPrint {
+                display: none;
+                height: 0px;
+            }
+        }
+
+        @@media screen {
+            body {
+                margin: 2mm 2mm 2mm 2mm;
+            }
+
+            #warning {
+            }
+
+            .printContainer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body style="overflow-y: hidden; padding: 0px; margin: 0px;">
+    <div ng-app="MyApp" ng-controller="AppCtrl" ng-init="initPrintRemarks();" layout="column" style="padding: 0px; margin: 0px;">
+        
+        <iframe flex="100" style="width: 100%; height: 450px; border: 0px; padding: 0px; margin: 0px;" src="/Remark/PrintSetupHelp" class="noPrint"></iframe>
+
+        <table class="printContainer">
+            <thead>
+                <tr>
+                    <td layout="row">
+                        <div flex></div>
+                        <div class="md-subhead"><b>{{remarksForPrint.ProductSerial + " - " + remarksForPrint.Name}}</b></div>
+                    </td>
+                </tr>
+            </thead>
+            <!--
+            <tbody>
+                <tr>
+                    <td>
+                        <div ng-repeat="remark in remarksForPrint.Remarks">
+                            <div layout="row" flex="33" layout-align="start start" style="{{$index === (remarksForPrint.Remarks.length -1) ? '' : 'page-break-after: always;'}}">
+                                @*<div class="rotated" style="width: 10px;">{{remarksForPrint.ProductSerial}}</div>*@
+                                <div flex layout-align="center center" class="md-caption"><b>{{remark.CreationDate}}</b> {{("(" + ($index+1) + " of " + remarksForPrint.Remarks.length + ") " + remark.Title + remark.Description)}}</div>
+                            </div>
+                            <div>
+                                &nbsp;
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+                -->
+            <tbody>
+                <tr>
+                    <td>
+                        <div ng-repeat="remark in remarksForPrint.Remarks">
+                            <div layout="row" flex="33" layout-align="start start" @*style="{{$index === (remarksForPrint.Remarks.length -1) ? '' : 'page-break-after: always;'}}"*@>
+                                <div flex layout-align="center center" class="md-caption">
+                                    <b>{{remark.CreationDate}} {{"(" + ($index+1) + " of " + remarksForPrint.Remarks.length + ") "}} {{remark.Title}} - {{remark.User}}</b><br />
+                                    {{remark.Description}}
+                                </div>
+                            </div>
+                            <div>
+                                &nbsp;
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+﻿
+.md-button-toggle .md-toggle-icon {
+    transition: transform .4s ease-in-out !important;
+    -webkit-transition: -webkit-transform .4s ease-in-out !important;
+}
+
+    .md-button-toggle .md-toggle-icon.toggled {
+        transform: rotateZ(180deg);
+        -webkit-transform: rotateZ(180deg);
+    }
+
+.md-button-toggle.toggled {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.side-menu .md-button-toggle .md-toggle-icon {
+    margin: auto 0 auto auto;
+    padding-top: 12px;
+    width: 15px;
+    float: right;
+    transition: transform .4s ease-in-out !important;
+    -webkit-transition: -webkit-transform .4s ease-in-out !important;
+}

@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Gatewing.ProductionTools.BLL.ProductModel">
+    <Position X="9" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>oAAAAAAEAAAAAIAEAAAAAARAIACAEAABAAAAAAAAABA=</HashCode>
+      <FileName>Entities\ProductModel.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="ProductComponents" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.ProductComponent">
+    <Position X="4.75" Y="0.5" Width="2" />
+    <AssociationLine Name="ProductModelState" Type="Gatewing.ProductionTools.BLL.ProductModelState">
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.595" Y="0.071" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AABAAAAAAgAACAAAACGAAAAQAAAAACAAACAQAAAAQBA=</HashCode>
+      <FileName>Entities\ProductComponent.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ProductModelState" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.ComponentAssembly">
+    <Position X="4.75" Y="5.5" Width="2" />
+    <AssociationLine Name="ProductComponent" Type="Gatewing.ProductionTools.BLL.ProductComponent">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-1.532" Y="0.682" Height="0.182" Width="1.455" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAEAAAAAAFAAABAAAABAAAAAAAA=</HashCode>
+      <FileName>Entities\ComponentAssembly.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ProductComponent" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.ProductAssembly">
+    <Position X="1.25" Y="4.25" Width="1.5" />
+    <AssociationLine Name="ComponentAssemblies" Type="Gatewing.ProductionTools.BLL.ComponentAssembly">
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.374" Y="0.049" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="ProductModel" Type="Gatewing.ProductionTools.BLL.ProductModel" ManuallyRouted="true">
+      <Path>
+        <Point X="2" Y="4.25" />
+        <Point X="2" Y="3.263" />
+        <Point X="7.125" Y="3.263" />
+        <Point X="7.125" Y="3.449" />
+        <Point X="9" Y="3.449" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="0.427" Y="5.427" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="ProductModelState" Type="Gatewing.ProductionTools.BLL.ProductModelState">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-1.62" Y="1.349" Height="0.182" Width="1.524" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="RemarkSymptoms" Type="Gatewing.ProductionTools.BLL.RemarkSymptom">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-1.549" Y="0.654" Height="0.182" Width="1.387" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAACAAMAAAACAAAAAgAAAAAAAAACAAAECAAAA=</HashCode>
+      <FileName>Entities\ProductAssembly.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ProductModel" />
+      <Property Name="ProductModelState" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="ComponentAssemblies" />
+      <Property Name="RemarkSymptoms" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.RemarkSymptom">
+    <Position X="1.25" Y="6.75" Width="1.75" />
+    <AssociationLine Name="ProductAssembly" Type="Gatewing.ProductionTools.BLL.ProductAssembly">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="1.472" Y="0.516" Height="0.182" Width="1.281" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="RemarkSymptomType" Type="Gatewing.ProductionTools.BLL.RemarkSymptomType">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.049" Y="0.308" Height="0.182" Width="1.358" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="RemarkSymptomCauses" Type="Gatewing.ProductionTools.BLL.RemarkSymptomCause" FixedFromPoint="true">
+      <Path>
+        <Point X="3" Y="8.149" />
+        <Point X="4.75" Y="8.149" />
+      </Path>
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.184" Y="0.087" Height="0.182" Width="1.748" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>QAAAAABAAAAgAgAEAAAAAAAACAAAAAAAAAQAAAAAAAA=</HashCode>
+      <FileName>Entities\RemarkSymptom.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ProductAssembly" />
+      <Property Name="RemarkSymptomType" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="RemarkSymptomCauses" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.RemarkSymptomType">
+    <Position X="1.25" Y="9.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\RemarkSymptomType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.RemarkSymptomCause">
+    <Position X="4.75" Y="8" Width="2" />
+    <AssociationLine Name="ComponentAssembly" Type="Gatewing.ProductionTools.BLL.ComponentAssembly">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-1.881" Y="0.296" Height="0.182" Width="1.653" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="CauseType" Type="Gatewing.ProductionTools.BLL.RemarkSymptomCauseType">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-2.376" Y="0.524" Height="0.182" Width="2.264" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAgAAgAAAAAgBAQAAAAAAAAAAAAAAAAABICAA=</HashCode>
+      <FileName>Entities\RemarkSymptomCause.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ComponentAssembly" />
+      <Property Name="CauseType" />
+      <Property Name="RemarkSymptomSolution" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.ProductModelState">
+    <Position X="1.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\ProductModelState.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.RemarkSymptomSolution">
+    <Position X="9.5" Y="6.25" Width="2.25" />
+    <AssociationLine Name="RemarkSymptomSolutionType" Type="Gatewing.ProductionTools.BLL.RemarkSymptomSolutionType">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-2.144" Y="0.196" Height="0.182" Width="1.995" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="ComponentAssembly" Type="Gatewing.ProductionTools.BLL.ComponentAssembly">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="2.652" Y="-1.336" Height="0.182" Width="1.42" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAACgAAgABAAAABAQAAAAAAAAAAAAAIAAAJAAAA=</HashCode>
+      <FileName>Entities\RemarkSymptomSolution.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="RemarkSymptomSolutionType" />
+      <Property Name="ComponentAssembly" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.RemarkSymptomSolutionType">
+    <Position X="9.25" Y="9.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\RemarkSymptomSolutionType.cs</FileName>
+      <NewMemberFileName>Entities\RemarkSymptomCauseType.cs</NewMemberFileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.RemarkSymptomCauseType">
+    <Position X="4.75" Y="10.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\RemarkSymptomCauseType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Gatewing.ProductionTools.BLL.ObjectArchivable" Collapsed="true">
+    <Position X="12" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAABAQAAAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>Entities\ObjectArchivable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

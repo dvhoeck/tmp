@@ -1,0 +1,200 @@
+﻿@{
+    ViewBag.Title = "Current model release";
+}
+<script src="~/Scripts/expansionPanel.directive.js"></script>
+<script src="~/Scripts/expansionPanel.service.js"></script>
+
+<div ng-controller="ProductsCtrl" layout="column" ng-cloak="" class="inputdemoErrors" ng-app="GTS">
+    <md-input-container layout-padding="">
+        <label>Select release</label>
+        <md-select name="favoriteColor" ng-model="selectedRelease" required ng-change="UpdateRelease(selectedRelease)">
+            <md-option value="{{release.Id}}" ng-repeat="release in releaseList" class="md-padding" onselect="">
+                <div layout="column">
+                    <span class="md-title">v{{release.Version}} - {{release.ReleaseDate}}</span>
+                    <span class="md-subhead">{{release.ReleaseComment}}</span>
+                </div>
+            </md-option>
+        </md-select>
+        <div class="errors" ng-messages="myForm.favoriteColor.$error">
+            <div ng-message="required">Required</div>
+        </div>
+    </md-input-container>
+    <md-content layout-padding="" data-ng-init="initReleaseHistory()">
+        <loading></loading>
+        <md-card>
+            <md-card-header layout-padding>
+                <md-card-header-media>
+                    <md-icon md-font-set="fa fa-history fa-8x" md-colors="{color: 'accent'}"></md-icon>
+                </md-card-header-media>
+                <md-card-header-text flex>
+                    <span class="md-title">Version: {{product.Version}}</span>
+                    <span class="md-subhead">Released: {{product.ReleaseDate}}</span>
+                    <span class="md-subhead">Comment: {{product.ReleaseComment}}</span>
+                    <span flex>
+                        <md-button ng-click="showChanges(product.Id, $event)" class="md-raised md-primary" aria-label="Show changes">
+                            Show changes
+                        </md-button>
+                    </span>
+                </md-card-header-text>
+            </md-card-header>
+            <md-card-title layout="column" layout-padding>
+                <div layout="row">
+                    <md-card-title-text flex="60">
+                        <span class="md-headline">{{product.Name}}</span>
+                        <span class="md-subhead">{{product.Comment}}</span>
+                    </md-card-title-text>
+                    <md-card-title-text flex="40">
+                        <span class="md-headline">Created:</span>
+                        <span class="md-subhead">{{product.Date}}</span>
+                    </md-card-title-text>
+                </div>
+                <div layout="row">
+                    <md-card-title-text flex="60">
+                        <span class="md-headline">Edited by</span>
+                        <span class="md-subhead">{{product.EditedBy}}</span>
+                    </md-card-title-text>
+                    <md-card-title-text flex="40">
+                        <span class="md-headline">Mask:</span>
+                        <span class="md-subhead">{{product.IdMask}}</span>
+                    </md-card-title-text>
+                </div>
+                <div layout="row" layout-align="center center">
+                    <md-card-title-text flex>
+                        <span class="md-headline">Product model configurations</span>
+                        <div layout="row" layout-align="start center">
+                            <span class="md-subhead" ng-repeat="config in product.ProductModelConfigurations">{{config.Name}},&nbsp;</span>
+                        </div>
+                    </md-card-title-text>
+                </div>
+            </md-card-title>
+            <md-divider class="ng-scope"></md-divider>
+            <md-card-content layout="column">
+                <h3>Components</h3>
+                <div ng-repeat="productComponent in product.ProductComponents" layout="column" layout-padding>
+                    <div layout="row">
+                        <div layout="row" flex="100">
+                            <div flex="5">
+                                <ng-md-icon icon="subdirectory_arrow_right" />
+                            </div>
+                            <div flex="45" class="md-list-item-text" layout="column">
+                                <span class="md-title">{{productComponent.ComponentName}}</span>
+                                <span class="md-subhead" ng-if="productComponent.ComponentRequirement == 1 || productComponent.ComponentRequirement == 4">Revision mask: {{productComponent.RevisionInputMask}}</span>
+                                <span class="md-subhead" ng-if="productComponent.ComponentRequirement > 1">Serial mask: {{productComponent.SerialInputMask}}</span>
+                            </div>
+                            <div flex="50" class="md-list-item-text">
+                                <p>State: {{productComponent.ProductModelState.Name}}</p>
+                                <p>Requirement: {{requirements[productComponent.ComponentRequirement]}}</p>
+                                <p ng-if="productComponent.DeviceKeyword && productComponent.ProductModelState.Name == 'Automation'">Device keyword: {{productComponent.DeviceKeyword}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div layout="column" ng-if="productComponent.ProductModelConfigurations && productComponent.ProductModelConfigurations.length > 0">
+                        <div layout="row">
+                            <div flex="5"></div>
+                            <div flex>Configurations</div>
+                        </div>
+                        <div layout="column">
+                            <div layout="row" ng-repeat="config in productComponent.ProductModelConfigurations">
+                                <div flex="5">
+                                    &nbsp;
+                                </div>
+                                <div flex="5">
+                                    <ng-md-icon icon="subdirectory_arrow_right" />
+                                </div>
+                                <div flex>
+                                    {{config.Name}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div layout="row" ng-if="productComponent.WorkInstructions && productComponent.WorkInstructions.length > 0">
+                        <div flex="5">
+                        </div>
+                        <div flex="95">
+                            <h4>Instructions</h4>
+                        </div>
+                    </div>
+                    <div layout="row" ng-repeat="instruction in productComponent.WorkInstructions">
+                        <div flex="5">
+                            &nbsp;
+                        </div>
+                        <div flex="5">
+                            <ng-md-icon icon="subdirectory_arrow_right" />
+                        </div>
+                        <div flex="5">
+                            {{instruction.SequenceOrder}}
+                        </div>
+                        <div flex="25">
+                            title: {{instruction.Title}}
+                        </div>
+                        <div flex="30">
+                            description: {{instruction.Description}}
+                        </div>
+                        <div flex="30">
+                            {{instruction.InstructionImage}}
+                        </div>
+                    </div>
+                </div>
+                <h3>Tools</h3>
+                <md-list data-ng-init="initProductComponents()">
+                    <md-list-item class="md-3-line md-no-proxy ng-scope _md" ng-repeat="tool in product.Tooling" role="listitem">
+                        <div layout="row" flex>
+                            <div flex="5">
+                                <ng-md-icon icon="subdirectory_arrow_right" />
+                            </div>
+                            <div flex="55" class="md-list-item-text" layout="column">
+                                <span class="md-title">{{tool.Name}}</span>
+                                <span class="md-subhead">{{tool.Code}}</span>
+                            </div>
+                            <div flex="40" class="md-list-item-text">
+                                <span class="md-subhead">{{tool.Setting}}</span>
+                                <span class="md-subhead">{{tool.Description}}</span>
+                            </div>
+                        </div>
+                        <md-divider class="ng-scope"></md-divider>
+                    </md-list-item>
+                </md-list>
+            </md-card-content>
+            <md-card-actions layout="row" layout-align="start center">
+                <a onclick="window.history.back();">
+                    <md-button aria-label="Remark">
+                        <div layout="row" layout-align="center center">
+                            <div>
+                                <ng-md-icon icon="arrow_back"></ng-md-icon>
+                            </div>
+                            <div>
+                                &nbsp;Back
+                            </div>
+                        </div>
+                    </md-button>
+                </a>
+            </md-card-actions>
+        </md-card>
+
+        <script type="text/ng-template" id="change-list.html">
+            <md-dialog aria-label="Product changes since last release." flex="80" ng-cloak>
+                <md-toolbar>
+                    <div class="md-toolbar-tools">
+                        <h2>Changes since last release</h2>
+                        <span flex></span>
+                        <md-button ng-click="answer('cancel')" class="md-icon-button">
+                            <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <md-dialog-content style="padding-left: 10px;padding-right: 10px; padding-top: 5px; padding-bottom: 5px;">
+                    <div flex ng-repeat="change in changeList" layout="row">
+                        <div flex="70">&bull;&nbsp;{{change.ChangeDescription}}</div>
+                        <div flex="20">{{change.ChangeMadeBy}}</div>
+                        <div flex="10">{{change.ChangeDate.replace("T", " ").replace("Z", "")}}</div>
+                    </div>
+                    <div flex ng-hide="changeList != null && changeList.length > 0" class="md-padding">
+                        No changes yet.
+                    </div>
+                </md-dialog-content>
+            </md-dialog>
+        </script>
+    </md-content>
+</div>
+@*<script src="~/Scripts/Views/ProductScripts.js?@DateTime.Now.Ticks.ToString()"></script>*@
+<script src="~/Scripts/Views/ProductScripts.js"></script>

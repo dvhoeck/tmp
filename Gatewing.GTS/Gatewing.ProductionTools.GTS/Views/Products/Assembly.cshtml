@@ -1,0 +1,921 @@
+﻿@using System.Configuration;
+@{
+
+    ViewBag.Title = "Assembly";
+}
+
+<style>
+    .example {
+        color: #808080;
+    }
+
+    .scaled {
+        transform: scale(0.7); /* Equal to scaleX(0.7) scaleY(0.7) */
+    }
+
+    div.myBadge {
+        border-radius: 50%;
+        height: 20px;
+        width: 20px;
+        background-color: yellow;
+        position: absolute;
+        /*position: element(#btnRemarkL);*/
+        text-align: center;
+        border: 1px solid red;
+        left: 80px;
+        top: 30px;
+        z-index: 999999;
+        color: black;
+        font-size: 10px;
+        vertical-align: middle;
+        line-height: 20px;
+    }
+
+    div.gtsOverlay {
+        background-color: rgba(0,0,0,0.9);
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        z-index: 9999999;
+    }
+
+    .cornerIcon {
+        transform: rotate(45deg);
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        z-index: 0;
+        top: -25px;
+        right: -25px;
+        z-index: 1;
+    }
+
+        .cornerIcon span {
+            font-size: 8px;
+            color: white;
+            top: 40px;
+            right: 0px;
+            position: absolute;
+            text-align: center;
+            width: 40px;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+
+    /* configContainer style (site.css) overrides */
+    .configContainer {
+        margin-right: 0px;
+    }
+
+    md-menu-content {
+        padding: 0px;
+        overflow-y: hidden;
+        background-color: rgba(0,0,0,0);
+    }
+    
+    .enterSerialRegion {
+        position: absolute;
+        z-index: 999999;
+        /*bottom: -200px;*/
+        top: 150px;
+        right: 20px;
+    }
+
+    .versionIndicator {
+        height: 40px;
+        width: 40px;
+        margin-top: 6px;
+        font-weight: bold;
+        background-color: white;
+        border-radius: 20px;
+        text-align: center;
+        color: #333333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+</style>
+<div ng-controller="AssemblyCtrl" ng-app="GTS" id="mainAssemblyDiv" tabindex="0" data-ng-init="InitAssembly();" ng-keydown="onKeyDown($event)" style="overflow: hidden;">
+    <div layout="column">
+
+        @if (User.IsInRole("Administrators"))
+        {
+            <div layout="column" class="errorContainer" ng-if="remarks.length > 0">
+                <div layout="row">
+                    <ng-md-icon icon="do_not_disturb_on" size="96" md-colors="{fill: 'grey-200'}"></ng-md-icon>
+                    <h1 flex class="md-display-3">This assembly is blocked!</h1>
+                    <a href="/Remark/Remark/{{assembly.Id}}">
+                        <ng-md-icon icon="link" size="32" md-colors="{fill: 'grey-200'}"></ng-md-icon>
+                    </a>
+                </div>
+                <p>To unblock this assembly, all remarks should be resolved. A remark can be resolved by creating a cause / solution pair for it and setting the solution to "Successful".</p>
+                <div>
+                    Nr of open remarks: {{remarks.length}}
+                    <ul>
+                        <li ng-repeat="remark in remarks"><em>{{remark.Name}} - {{remark.Description}}</em></li>
+                    </ul>
+                </div>
+
+                <div layout="row" layout-align="center end">
+                    <div flex></div>
+                    <div layout="column">
+                        <div layout="row">
+                            <div flex></div>
+                            <md-button class="md-raised md-accent" aria-label="Click to Lock / Unlock" ng-click="unLockPage();" ng-disabled="isSaving" ng-if="pageLockedWhenInRemark">
+                                <div layout="row" layout-align="center center">
+                                    <div>
+                                        <ng-md-icon icon="lock"></ng-md-icon>
+                                    </div>
+                                    <div>
+                                        &nbsp;Locked
+                                    </div>
+                                </div>
+                            </md-button>
+                            <md-button class="md-raised md-accent" aria-label="Click to Lock / Unlock" ng-click="unLockPage();" ng-disabled="isSaving" ng-if="!pageLockedWhenInRemark">
+                                <div layout="row" layout-align="center center">
+                                    <div>
+                                        <ng-md-icon icon="lock_open"></ng-md-icon>
+                                    </div>
+                                    <div>
+                                        &nbsp;Unlocked
+                                    </div>
+                                </div>
+                            </md-button>
+                            <md-tooltip>Click button to unlock / lock page</md-tooltip>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        }
+        <loading></loading>
+        <md-toolbar class="md-hue-2 md-padding" layout="column" layout-align="center start" hide-xs ng-if="!isInQCMode();">
+            <div layout="row" style="width: 100%;">
+                <div class="versionIndicator">v{{assembly.ProductModelVersion}}</div>
+                @*<md-button class="md-fab md-mini md-primary greyButton" aria-label="Version">v{{assembly.ProductModelVersion}}</md-button>*@
+                <h3 class="md-headline">{{assembly.ProductModelName}} <span md-colors="{color: 'accent'}">{{assembly.ProductSerial}}</span> - Public serial: <span md-colors="{color: 'warn'}">{{assembly.PublicProductSerial ? assembly.PublicProductSerial : "NONE"}}</span></h3>
+                <md-button class="md-icon-button md-accent" ng-click="togglePublicSerialInput()" ng-disabled="displayPublicSerialInput" style="margin-top: 5px !important;">
+                    <md-icon md-font-set="fa fa-wrench fa-lg"></md-icon>
+                    <md-tooltip>Add / edit public serial</md-tooltip>
+                </md-button>
+                <md-button class="md-icon-button" ng-click="togglePublicSerialHistory()" style="margin-top: 5px !important;">
+                    <md-icon md-font-set="fa fa-clipboard-list fa-lg"></md-icon>
+                    <md-tooltip>Show public serials history for this assembly</md-tooltip>
+                </md-button>
+                <div flex></div>
+            </div>
+            <div layout="row" layout-align="center center" style="width: 100%;" ng-form name="formPublicSerial">
+                <div flex></div>
+                <div layout="row" layout-align="center center" ng-if="displayPublicSerialInput == true" md-theme="'docsDark'" class="@Constants.Strings.AnimationClasses">
+                    <md-input-container flex class="md-block">
+                        <label>Public serial</label>
+                        <input md-maxlength="50" required="" name="PublicProductSerial" ng-model="newPublicProductSerial" value="{{assembly.PublicProductSerial}}" ng-pattern="assembly.PublicIdMask" ng-disabled="isSaving">
+                        <div ng-messages="PublicProductSerial.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="md-maxlength">The public serial must be less than 50 characters long.</div>
+                            <div ng-message="ng-pattern">{{assembly.PublicIdMask}}</div>
+                        </div>
+                    </md-input-container>
+                    <md-button ng-click="togglePublicSerialInput()">
+                        Cancel
+                    </md-button>
+                    <md-button class="md-raised md-accent" ng-disabled="formPublicSerial.$invalid" ng-click="setPublicSerialFromInput(assembly.Id, newPublicProductSerial);" ng-if="(assembly.PublicProductSerial && authenticatedAsAdministrator) || !assembly.PublicProductSerial">
+                        <md-icon md-font-set="fa fa-save fa-lg"></md-icon>
+                        Save
+                        <md-tooltip>Save public serial</md-tooltip>
+                    </md-button>
+                </div>
+            </div>
+            <div layout="row" layout-align="center center" style="width: 100%;" ng-form name="formPublicSerial">
+                <div flex layout="column" layout-align="center center" ng-if="displayPublicSerialHistory == true" md-theme="'docsDark'" class="@Constants.Strings.AnimationClasses">
+                    <div class="md-title" layout="row" style="width: 100%;">
+                        <div flex></div>
+                        <div flex="75">Archived public serials for this assembly</div>
+                    </div>
+                    <div class="md-subhead" ng-repeat="archivedPublicSerial in archivedPublicProductSerials" layout="row" layout-align="center center" style="width: 100%;">
+                        <div flex></div>
+                        <div flex="15" md-colors="{color: 'warn'}">
+                            {{archivedPublicSerial.PublicProductSerial}}
+                        </div>
+                        <div flex="30">
+                            {{archivedPublicSerial.ArchivedBy}}
+                        </div>
+                        <div flex="30">
+                            {{archivedPublicSerial.ArchivalDate}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div layout="row" style="width: 100%;">
+                <div flex></div>
+                <md-menu>
+                    <md-button class="md-raised md-warn" aria-label="Choose configurations" ng-click="$mdMenu.open($event)" ng-disabled="isSaving">
+                        <div layout="row" layout-align="center center">
+                            <div>
+                                <md-icon md-font-set="fa fa-cog"></md-icon>
+                            </div>
+                            <div>
+                                &nbsp;Configs
+                            </div>
+                            <md-tooltip>Click this button to choose assembly configurations</md-tooltip>
+                        </div>
+                    </md-button>
+                    <md-menu-content>
+                        <md-menu-item ng-repeat="config in assembly.AvailableProductModelConfigurations | orderBy: 'ConfigIndex'" ng-if="config.Name != 'default'">
+                            <div class="configContainer md-whiteframe-3dp" style="background-color: {{isInConfig(assembly.SelectedProductModelConfigurations, config) ? config.Color : '#9d9d9d'}}; color: white; margin-bottom: 5px; padding: 5px;" layout="row" layout-align="start center">
+                                <md-button class="md-icon-button" ng-if="!isInConfig(assembly.SelectedProductModelConfigurations, config)" ng-click="applyConfig(assembly, config, true)">
+                                    <md-icon md-font-set="fa fa-square"></md-icon>
+                                </md-button>
+
+                                @if (User.IsInRole("Administrators"))
+                                {
+                                    <md-button class="md-icon-button" ng-if="isInConfig(assembly.SelectedProductModelConfigurations, config)" ng-click="applyConfig(assembly, config, false)">
+                                        <md-icon md-font-set="fa fa-check-square"></md-icon>
+                                    </md-button>
+                                }
+                                <div flex="90">&nbsp;{{config.Name}}</div>
+
+                                <div flex="10"></div>
+                            </div>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+                @if (User.IsInRole("Administrators"))
+                {
+                    <md-button class="md-raised md-accent" aria-label="Previous state" ng-if="remarks.length == 0 || pageLockedWhenInRemark === false" ng-click="deportToState(assembly.Id, false);" ng-disabled="isSaving">
+                        <div layout="row" layout-align="center center">
+                            <div>
+                                <ng-md-icon icon="fast_rewind"></ng-md-icon>
+                            </div>
+                            <div>
+                                &nbsp;Previous state
+                            </div>
+                        </div>
+                    </md-button>
+                }
+                <md-button class="md-raised md-accent" aria-label="Next state" ng-if="remarks.length == 0 || pageLockedWhenInRemark === false" ng-click="deportToState(assembly.Id, true);" ng-disabled="isSaving">
+                    <div layout="row" layout-align="center center">
+                        <div>
+                            <ng-md-icon icon="fast_forward"></ng-md-icon>
+                        </div>
+                        <div>
+                            &nbsp;Next state
+                        </div>
+                    </div>
+                    <md-tooltip>Hotkey: ALT+N</md-tooltip>
+                </md-button>
+                <div>
+                    <md-button class="md-raised md-warn" aria-label="Remark" ng-disabled="isSaving" ng-click="navigateTo('/Remark/Remark/' + assembly.Id);" style="overflow: visible;">
+
+                        <div layout="row" layout-align="center center">
+                            <div>
+                                <ng-md-icon icon="do_not_disturb_on" md-colors="{fill: 'grey-100'}"></ng-md-icon>
+                            </div>
+                            <div>
+                                &nbsp;Remark
+                            </div>
+                            <div ng-if="remarks.length > 0" style="border: 1px solid green; position: absolute; top: 55px; right: -20px;" md-badge="{{remarks.length}}"></div>
+                        </div>
+                    </md-button>
+                </div>
+                @if (User.IsInRole("Administrators"))
+                {
+                    <md-menu>
+                        <md-button aria-label="Open phone interactions menu" ng-disabled="isSaving" class="md-raised md-warn" ng-click="openMenu($mdMenu, $event)">
+                            <div layout="row" layout-align="center center">
+                                <div>
+                                    <ng-md-icon icon="delete_forever" md-colors="{fill: 'grey-100'}"></ng-md-icon>
+                                </div>
+                                <div>
+                                    &nbsp;Roll back
+                                </div>
+                            </div>
+                            <md-tooltip>Roll back assembly to a particular state (starting from the last and up to the chosen state, this will clear all Revision and Serial values)</md-tooltip>
+                        </md-button>
+                        <md-menu-content width="4">
+                            <md-menu-item ng-repeat="state in states">
+                                <md-button ng-click="rollBackToState(assembly.Id, state.Index);">
+                                    {{state.Name}}
+                                </md-button>
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
+
+                    <md-menu md-position-mode="right target" style="z-index: 999999;">
+                        <md-button aria-label="Open menu" class="md-icon-button md-warn" ng-click="$mdMenu.open($event);">
+                            <md-icon md-menu-origin md-font-set="fa fa-bars fa-2x"></md-icon>
+                        </md-button>
+                        <md-menu-content style="background-color: white;" width="3">
+                            <md-menu-item>
+                                <md-button ng-click="scrap(assembly.Id);" ng-disabled="isSaving" layout="row" layout-align="center center">
+                                    <div layout="row" layout-align="start center">
+                                        <md-icon flex="15" md-menu-align-target md-font-set="fa fa-recycle fa-lg" md-colors="{color: 'warn'}"></md-icon>
+                                        <span>Scrap assembly</span>
+                                    </div>
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-divider></md-menu-divider>
+                            <md-menu-item>
+                                <md-button ng-disabled="isSaving" ng-click="deliver(assembly.Id);">
+                                    <div layout="row" layout-align="start center">
+                                        <md-icon flex="15" md-menu-align-target md-font-set="fa fa-clipboard-check fa-lg" md-colors="{color: 'warn'}"></md-icon>
+                                        <span>Deliver</span>
+                                    </div>
+                                </md-button>
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
+                }
+            </div>
+        </md-toolbar>
+
+        <md-toolbar class="md-hue-2 md-padding" layout="row" layout-xs="column" layout-align-gt-xs="center center" hide-gt-xs>
+            <md-button class="md-fab md-mini md-primary greyButton" aria-label="Version" hide-xs>v{{assembly.ProductModelVersion}}</md-button>
+            <h4 class="md-subhead" md-truncate>{{assembly.ProductModelName}} {{assembly.ProductSerial}}</h4>
+            @if (User.IsInRole("Administrators"))
+            {
+                <md-button class="md-raised md-accent" aria-label="Previous state" ng-if="remarks.length == 0" ng-click="deportToState(assembly.Id, false);" ng-disabled="isSaving">
+                    <div layout="row" layout-align="center center">
+                        <div>
+                            <ng-md-icon icon="fast_rewind"></ng-md-icon>
+                        </div>
+                        <div>
+                            &nbsp;Previous state
+                        </div>
+                    </div>
+                </md-button>
+            }
+            <md-button class="md-raised md-accent" aria-label="Next state" ng-if="remarks.length == 0" ng-click="deportToState(assembly.Id, true);" ng-disabled="isSaving">
+                <div layout="row" layout-align="center center">
+                    <div>
+                        <ng-md-icon icon="fast_forward"></ng-md-icon>
+                    </div>
+                    <div>
+                        &nbsp;Next state
+                    </div>
+                </div>
+                <md-tooltip>Hotkey: ALT+N</md-tooltip>
+            </md-button>
+            <md-button class="md-raised md-warn" aria-label="Remark" ng-disabled="isSaving" ng-click="navigateTo('/Remark/Remark/' + assembly.Id);">
+                <div layout="row" layout-align="center center">
+                    <div>
+                        <ng-md-icon icon="do_not_disturb_on" md-colors="{fill: 'grey-100'}"></ng-md-icon>
+                    </div>
+                    <div>
+                        &nbsp;Remark
+                    </div>
+                </div>
+            </md-button>
+            @if (User.IsInRole("Administrators"))
+            {
+                <md-button class="md-raised md-warn" aria-label="Remark" ng-disabled="isSaving" ng-click="deliver(assembly.Id);">
+                    <div layout="row" layout-align="center center">
+                        <div>
+                            <ng-md-icon icon="assignment_turned_in" md-colors="{fill: 'grey-100'}"></ng-md-icon>
+                        </div>
+                        <div>
+                            &nbsp;Deliver
+                        </div>
+                    </div>
+                </md-button>
+                <md-button class="md-raised md-warn" aria-label="Scrap" ng-click="scrap(assembly.Id);" ng-disabled="isSaving">
+                    <div layout="row" layout-align="center center">
+                        <div>
+                            <ng-md-icon icon="airplanemode_inactive" md-colors="{fill: 'grey-100'}"></ng-md-icon>
+                        </div>
+                        <div>
+                            &nbsp;SCRAP ASSEMBLY
+                        </div>
+                    </div>
+                </md-button>
+            }
+        </md-toolbar>
+
+        <div>
+            <md-progress-linear md-mode="determinate" class="md-warn" value="{{assembly.Progress}}"></md-progress-linear>
+        </div>
+
+        <note ng-if="batchModeItems.length > 0" msg="'When entering serials for batch mode items, pay close attention to which serial you scan for which product. Keep in mind that deporting to next state will deport all batch mode items as well.'"></note>
+
+        <div layout="row" layout-xs="column" style="overflow-y: hidden; height:{{isInQCMode() ? '95vh': batchModeItems.length > 0 ? '62vh' : '75vh'}}; border: 0px solid blue;">
+
+            <div flex-gt-xs="50" style="overflow-y: scroll; border: 0px solid pink;">
+
+                <div layout="row">
+
+                    <md-card flex>
+                        <md-card-content>
+                            <div layout="column">
+                                <div layout="row">
+                                    <ng-md-icon icon="play_arrow" md-colors="{fill: 'accent-800'}"></ng-md-icon>
+                                    <div class="md-subhead">&nbsp;Started on:&nbsp;</div>
+                                    <div class="md-subhead" style="font-weight: bold;">{{assembly.FormattedStartDate}}</div>
+                                </div>
+                                <div layout="row">
+                                    <ng-md-icon icon="person" md-colors="{fill: 'accent-800'}"></ng-md-icon>
+                                    <div class="md-subhead" hide-xs>&nbsp;Started by:&nbsp;</div>
+                                    <div class="md-subhead" style="font-weight: bold;">{{assembly.StartedBy}}</div>
+                                </div>
+                                <div layout="row">
+                                    <ng-md-icon icon="person_outline" md-colors="{fill: 'accent-800'}"></ng-md-icon>
+                                    <div class="md-subhead" hide-xs>&nbsp;Edited by:&nbsp;</div>
+                                    <div class="md-subhead" style="font-weight: bold;">{{assembly.EditedBy}}</div>
+                                </div>
+                                <div layout="row">
+                                    <ng-md-icon icon="flag" md-colors="{fill: 'accent-800'}"></ng-md-icon>
+                                    <div class="md-subhead">&nbsp;Current state:&nbsp;</div>
+                                    <div class="md-subhead" style="font-weight: bold;">{{assembly.ProductModelState.Name}}</div>
+                                </div>
+                                <div layout="row">
+                                    <ng-md-icon icon="check_box" md-colors="{fill: 'accent-800'}"></ng-md-icon>
+                                    <div class="md-subhead">&nbsp;Completed:&nbsp;</div>
+                                    <div class="md-subhead" style="font-weight: bold;">{{assembly.Progress}}%</div>
+                                </div>
+                                <div layout="row">
+                                    <ng-md-icon icon="done_all" md-colors="{fill: 'accent-800'}"></ng-md-icon>
+                                    <div class="md-subhead">&nbsp;Final state:&nbsp;</div>
+                                    <div class="md-subhead" style="font-weight: bold;">{{assembly.EvaluationState}}</div>
+                                </div>
+                            </div>
+                        </md-card-content>
+                    </md-card>
+                </div>
+                <form name="assemblyForm">
+                    <div ng-repeat="group in grouped" on-finish-render flex style="overflow: auto; overflow-x:hidden; ">
+                        <md-subheader class="md-warn" style="z-index: 1;"><div layout="row" layout-align="center center"><div ng-show="group.state.Name == 'Automation'"><ng-md-icon icon="memory" size="24" md-colors="{fill: 'warn'}" style="padding-top: -10px;"></ng-md-icon></div><div flex>{{group.state.Name}}</div></div></md-subheader>
+
+                        <!--<fieldset style="border: 0px;" class="md-title" ng-disabled="(assembly.ProductModelState.Name != group.state.Name || $index != assembly.CurrentStateIndex ||  remarks.length > 0) && !pageUnlocked">-->
+
+                        @if (User.IsInRole("Administrators"))
+                        {
+                            @:<fieldset style='border: 0px;' class='md-title' @*ng-disabled='isLocked(group.state.Name, $index)'*@ data-ng-init="thisGroupIndex = $index;">
+                        }
+                        else
+                        {
+                            @:<fieldset style='border: 0px;' @*ng-disabled='assembly.ProductModelState.Name != group.state.Name || $index != assembly.CurrentStateIndex ||  remarks.length > 0 || group.state.Name == "Automation"'*@ class='md-title' data-ng-init="thisGroupIndex = $index;">
+                        }
+
+                        @{
+                            var disableCode = "";
+                            if (User.IsInRole("Administrators"))
+                            {
+                                //disableCode = "ng-disabled=\"isLocked(group.state.Name, $index)\"";
+                                disableCode = "isLocked(group.state.Name, thisGroupIndex)";
+                            }
+                            else
+                            {
+                                disableCode = "assembly.ProductModelState.Name != group.state.Name || thisGroupIndex != assembly.CurrentStateIndex ||  remarks.length > 0 || group.state.Name == 'Automation'";
+                            };
+                        }
+
+                        <div ng-repeat="componentAssembly in group.components">
+
+                            <md-content class="md-whiteframe-z1" md-theme="group.state.Name == 'Automation' ? 'docsLight': '{{theme[componentAssembly.SequenceOrder] || 'default'}}'" md-theme-watch="true" tabindex="-1" ng-click="assembly.ProductModelState.Name !=group.state.Name || $index != assembly.CurrentStateIndex ? displayWorkInstruction(componentAssembly) : null" style="overflow-x: hidden;" ng-if="checkComponentAssemblyConfigurations(componentAssembly)">
+                                <div class="cornerIcon" style="background-color: {{componentAssembly.ProductModelConfigurations[0].Color != '#9d9d9d'? componentAssembly.ProductModelConfigurations[0].Color: ''}};"><span md-truncate>{{componentAssembly.ProductModelConfigurations[0].Name != 'default' ? componentAssembly.ProductModelConfigurations[0].Name : ''}}</span><md-tooltip>{{componentAssembly.ProductModelConfigurations[0].Name}}</md-tooltip></div>
+                                <div layout="row" class="md-padding" flex>
+                                    <md-input-container flex class="md-block" ng-if="componentAssembly.ComponentRequirement == '4' || componentAssembly.ComponentRequirement == '1'">
+                                        <label md-truncate>{{componentAssembly.ComponentName}}</label>
+                                        <input name="{{getRevisionName(componentAssembly)}}" ng-model="componentAssembly.Revision" class="md-headline assemblyInputField" placeholder="Revision" ng-blur="inputBlur(componentAssembly, true)" ng-focus="inputFocus(componentAssembly)"
+                                               ng-pattern="componentAssembly.RevisionInputMask" ng-disabled="@disableCode">
+                                        <div class="md-caption example" style="text-align: right;">{{componentAssembly.RevisionInputMask}}</div>
+                                        <div ng-messages="assemblyForm[getRevisionName(componentAssembly)].$error">
+                                            <div ng-message="pattern">Incorrect format for {{componentAssembly.ComponentName}} revision.</div>
+                                        </div>
+                                        <md-tooltip ng-if="componentAssembly.Revision">Value entered: {{componentAssembly.AssemblyDateTime.toString().replace("T", " ")}}</md-tooltip>
+                                        <div layout="row" layout-align="start center" ng-if="batchModeItems.length > 0 &&  assembly.ProductModelState.Name == group.state.Name && assembly.CurrentStateIndex == thisGroupIndex" style="margin-top: -16px;">
+                                            <ng-md-icon icon="share" size="12" md-colors="{fill: batchModeItems.length > 0 ? 'warn': 'grey-500'}"></ng-md-icon>
+                                            <span class="md-caption">: {{batchModeItems.length}}</span>
+                                            <md-tooltip md-direction="top">
+                                                <span ng-repeat="item in batchModeItems">
+                                                    [{{$index + 1}}] {{item.serial}}&nbsp;&nbsp;&nbsp;
+                                                </span>
+                                            </md-tooltip>
+                                        </div>
+                                    </md-input-container>
+
+                                    <md-input-container flex class="md-block" ng-if="componentAssembly.ComponentRequirement == '4'">
+                                        <label></label>
+                                        <input name="{{getSerialName(componentAssembly)}}" ng-model="componentAssembly.Serial" class="md-headline assemblyInputField" placeholder="Serial" ng-blur="inputBlur(componentAssembly)" ng-focus="inputFocus(componentAssembly)"
+                                               ng-pattern="componentAssembly.SerialInputMask" ng-disabled="@disableCode">
+                                        <div class="md-caption example" style="text-align: right;">{{componentAssembly.SerialInputMask}}</div>
+                                        <div ng-messages="assemblyForm[getSerialName(componentAssembly)].$error">
+                                            <div ng-message="pattern">Incorrect format for {{componentAssembly.ComponentName}} serial.</div>
+                                        </div>
+                                        <md-tooltip ng-if="componentAssembly.Serial">Value entered: {{componentAssembly.AssemblyDateTime.toString().replace("T", " ")}}</md-tooltip>
+                                        <div layout="row" layout-align="start center" ng-if="batchModeItems.length > 0" style="margin-top: -16px;">
+                                            <ng-md-icon icon="share" size="12" md-colors="{fill: batchModeItems.length > 0 ? 'warn': 'grey-500'}"></ng-md-icon>
+                                            <span class="md-caption">: {{batchModeItems.length}}</span>
+                                            <md-tooltip>
+                                                <span ng-repeat="item in batchModeItems">
+                                                    [{{$index + 1}}] {{item.serial}}&nbsp;&nbsp;&nbsp;
+                                                </span>
+                                            </md-tooltip>
+                                        </div>
+                                    </md-input-container>
+
+                                    <!-- Serial -->
+                                    <md-input-container flex class="md-block" ng-if="componentAssembly.ComponentRequirement == '2' && componentAssembly.ProductModelType != 4">
+                                        <!-- Create a link to another assembly if it has a valid serial -->
+                                        <label layout="row" layout-align="start center">{{componentAssembly.ComponentName}}</label>
+
+                                        <input name="{{getSerialName(componentAssembly)}}" ng-model="componentAssembly.Serial" class="md-headline assemblyInputField" placeholder="Serial" ng-blur="inputBlur(componentAssembly)" ng-focus="inputFocus(componentAssembly)"
+                                               ng-pattern="componentAssembly.SerialInputMask" ng-disabled="@disableCode">
+                                        <div class="md-caption example" style="text-align: right;">{{componentAssembly.SerialInputMask}}</div>
+                                        <div layout="row" layout-align="center center" style="position:absolute; bottom: -30px; right: 0px; margin-right: -30px;" ng-if="componentAssembly.UnderlyingProductAssemblyId && componentAssembly.ProductModelType != 4">
+
+                                            <md-button aria-label="Click to sub assembly" class="scaled" ng-href="/Products/Assembly/{{componentAssembly.UnderlyingProductAssemblyId}}" target="_blank" tabindex="-1">
+                                                <div layout="row" layout-align="center center">
+
+                                                    <div>
+                                                        View subassembly&nbsp;
+                                                    </div>
+                                                    <div>
+                                                        <md-icon color="darkorange" md-font-set="fa fa-fw fa-external-link-alt" style="margin-top: -5px;"></md-icon>
+                                                    </div>
+                                                </div>
+                                            </md-button>
+                                        </div>
+                                        <div ng-messages="assemblyForm[getSerialName(componentAssembly)].$error">
+                                            <div ng-message="pattern">Incorrect format for {{componentAssembly.ComponentName}} serial.</div>
+                                        </div>
+                                        <md-tooltip ng-if="componentAssembly.Serial">Value entered: {{componentAssembly.AssemblyDateTime.toString().replace("T", " ")}}</md-tooltip>
+                                    </md-input-container>
+
+                                    <!-- Serial (for QC's) -->
+                                    <md-input-container flex class="md-block" ng-if="componentAssembly.ComponentRequirement == '2' && componentAssembly.ProductModelType == 4" ng-blur="inputBlurContainer(componentAssembly)" ng-focus="inputFocus(componentAssembly)" layout="row">
+                                        <label>{{componentAssembly.ComponentName}}</label>
+                                        <br />
+                                        <div layout="row" layout-align="start center">
+
+                                            <md-button class="md-raised md-accent" ng-disabled="isSaving || @disableCode" ng-click="showQCFormDialog(componentAssembly.Id, componentAssembly.ProductModelBaseId); isSaving = true;">
+                                                <div layout="row" layout-align="center center">
+                                                    <div>
+                                                        <ng-md-icon icon="gavel"></ng-md-icon>
+                                                    </div>
+                                                    <div>
+                                                        &nbsp;QC
+                                                    </div>
+                                                </div>
+                                            </md-button>
+                                            <md-tooltip>Click this to do a Quality Check...</md-tooltip>
+                                            <span class="md-body-1"> | Click this to do a Quality Check</span>
+                                        </div>
+                                        <div layout="row" layout-align="start center">
+                                            <div flex></div>
+                                            <span class="md-body-1">View previous QC's | </span>
+                                            <md-button ng-disabled="false" tabindex="-1" class="md-raised md-warning" ng-click="showQCListDialog(componentAssembly.ProductComponentId, assembly.Id);">
+                                                <div layout="row" layout-align="center center">
+                                                    <div>
+                                                        <ng-md-icon icon="history"></ng-md-icon>
+                                                    </div>
+                                                    <div>
+                                                        &nbsp;QC History
+                                                    </div>
+                                                </div>
+                                            </md-button>
+                                            <md-tooltip>Click this to view previous QC's...</md-tooltip>
+                                        </div>
+                                    </md-input-container>
+
+                                    <md-input-container flex class="md-block" ng-if="componentAssembly.ComponentRequirement == '0'">
+                                        <label> {{componentAssembly.ComponentName}}</label>
+                                    </md-input-container>
+                                </div>
+
+                                <!--
+                                </md-content>
+                                <md-content md-theme="{{group.state.Name == 'Automation' ? 'docsLight': theme[componentAssembly.SequenceOrder]}}" md-theme-watch="true"  ng-if="componentAssembly.ComponentRequirement == '2' && componentAssembly.ProductModelType != 4 && batchModeItems.length > 0 &&  assembly.ProductModelState.Name == group.state.Name && assembly.CurrentStateIndex == thisGroupIndex">
+                                        -->
+                                <div ng-repeat="item in batchModeItems" flex layout-padding layout="row" ng-if="componentAssembly.ComponentRequirement == '2' && componentAssembly.ProductModelType != 4 && batchModeItems.length > 0 &&  assembly.ProductModelState.Name == group.state.Name && assembly.CurrentStateIndex == thisGroupIndex">
+                                    <md-input-container flex style="margin-top: -20px;">
+                                        <label></label>
+                                        <div layout="row" layout-align="center center" style="border: 0px solid orange;">
+                                            <div flex>
+                                                <input name="{{getSerialName(componentAssembly) + "_" + $index}}" ng-model="item.serialInputs[getInputIndex(item, componentAssembly.ProductComponentId)].value" class="md-headline assemblyInputField" placeholder="Serial (batch mode)" ng-pattern="componentAssembly.SerialInputMask" ng-blur="updateBatchSerial(item.serial, componentAssembly.ProductComponentId, item.serialInputs[getInputIndex(item, componentAssembly.ProductComponentId)].value, componentAssembly.SerialInputMask)" ng-disabled="@disableCode" />
+                                                <div ng-messages="assemblyForm[getSerialName(componentAssembly) + '_' + $index].$error">
+                                                    <div ng-message="pattern">Incorrect format for {{componentAssembly.ComponentName}} serial.</div>
+                                                </div>
+                                            </div>
+                                            <span>&nbsp;</span>
+                                            <ng-md-icon icon="share" md-colors="{fill: 'warn'}" style="margin-top: -20px;"></ng-md-icon>
+                                            <span>&nbsp;</span>
+                                            <span flex="30" style="margin-top: -20px; text-align: left;" md-colors="{color:'grey-400'}">{{item.serial}}</span>
+                                        </div>
+                                    </md-input-container>
+                                </div>
+                            </md-content>
+                        </div>
+                    </fieldset>
+            </div>
+        </form>
+    </div>
+
+    <div flex id="workInstructionContainer" layout="column">
+
+        <md-tabs flex style="height: 100px;" md-border-bottom md-selected="selectedIndex">
+            <md-tab label="Work Instructions">
+                <div layout="column">
+                    <div layout="row" layout-align="center center" ng-if="instructions && instructions.length">
+                        <div layout-align="center center" flex><a aria-label="Previous" ng-click="previousInstruction()"><ng-md-icon icon="fast_rewind" size="48" md-colors="{fill: 'grey-500'}" style="cursor: pointer;"></ng-md-icon></a></div>
+                        <md-content layout="row" ng-cloak style="max-width: 550px;">
+                            <div ng-repeat="instruction in instructions">
+                                <md-button class="md-fab md-mini greyButton" ng-if="instructionIndex != instruction.SequenceOrder" id="wi_{{instruction.SequenceOrder}}" ng-click="setInstruction(instruction.SequenceOrder)" aria-label="Version">{{instruction.SequenceOrder}}</md-button>
+                                <md-button class="md-fab md-mini orangeButton" ng-if="instructionIndex == instruction.SequenceOrder" id="wi_{{instruction.SequenceOrder}}" aria-label="Version">{{instruction.SequenceOrder}}</md-button>
+                            </div>
+                        </md-content>
+                        <div layout="column" layout-align="center center" flex><a ng-click="nextInstruction()"><ng-md-icon icon="fast_forward" aria-label="Next" size="48" md-colors="{fill: 'grey-500'}" style="cursor: pointer;"></ng-md-icon></a></div>
+                    </div>
+                    <div layout="column">
+                        <div ng-repeat="instruction in instructions" ng-if="instructionIndex == instruction.SequenceOrder">
+                            <md-card>
+                                <md-card-title>
+                                    <md-card-title-text>
+                                        <span class="md-headline">{{instruction.Title}}<ng-md-icon ng-if="instruction.Description.indexOf('http') > -1" icon="open_in_new" md-colors="{fill: 'orange-800'}"></ng-md-icon></span>
+                                        <span class="md-subhead" ng-if="instruction.Description.indexOf('http') > -1"><a href="{{instruction.Description}}" target="_blank">{{instruction.Description}}</a></span>
+                                        <span class="md-subhead" ng-if="instruction.Description.indexOf('http') == -1">{{instruction.Description}}</span>
+                                    </md-card-title-text>
+                                </md-card-title>
+                                <img class="md-card-image" md-lightbox md-lightbox-title="{{instruction.Title}}" style="cursor: pointer;" ng-src="~/Content/Images/WorkInstructions/{{instruction.RelativeImagePath}}" ng-show="instruction.RelativeImagePath != 'placeholder.png'" />
+                            </md-card>
+                        </div>
+                    </div>
+                </div>
+            </md-tab>
+            <md-tab label="Tooling">
+                <md-content>
+                    <md-card ng-repeat="tool in tooling">
+                        <md-card-content>
+                            <div class="md-list-item-text" layout="row">
+                                <div flex="70">
+                                    <h3>{{ tool.Name }}</h3>
+                                    <p>{{ tool.Description }}</p>
+                                </div>
+                                <div>
+                                    <h4>{{ tool.ToolCode }}</h4>
+                                    <p>{{ tool.Setting }}</p>
+                                </div>
+                            </div>
+                        </md-card-content>
+                    </md-card>
+                </md-content>
+            </md-tab>
+        </md-tabs>
+    </div>
+</div>
+</div>
+
+<div ng-show="batchModeBusy" class="gtsOverlay" layout="row" layout-align="center center">
+    <div layout="column" layout-align="center center">
+        <ng-md-icon icon="share" size="256" md-colors="{fill: 'warn'}"></ng-md-icon>
+        <h1>Working...</h1>
+    </div>
+</div>
+
+<!-- if the assembly is blocked, use this style to disable scrolling -->
+<style ng-if="remarks.length > 0">
+    html, body, md-content {
+        overflow-x: hidden;
+        overflow-y: hidden;
+    }
+</style>
+@if (!User.IsInRole("Administrators"))
+{
+    <div style="position: fixed; width: 100%; height: 100%; top: 0px; left: 0px; background-color: rgba(0,0,0,0.9); z-index: 3;" ng-if="remarks.length > 0">
+        <div class="errorContainer" style="position: absolute; width: 600px; height: auto; top: 50px; left: 50%; margin-left: -300px; z-index: 99999; background-color: rgba(0,0,0,0);">
+            <div layout="column">
+                <div layout="row" layout-align="center center">
+                    <ng-md-icon icon="do_not_disturb_on" size="144" style="fill: #9f0000;"></ng-md-icon>
+                </div>
+                <div layout="row" layout-align="center center">
+                    <h1 flex class="md-display-3">This assembly is blocked!</h1>
+                    <div layout="row">
+                        <a href="/Remark/Remark/{{assembly.Id}}">
+                            <md-tooltip md-direction="top">Click to go to the remark screen</md-tooltip>
+                            <ng-md-icon icon="link" size="32" md-colors="{fill: 'orange-800'}"></ng-md-icon>
+                        </a>
+                        <a href="" ng-if="remarks.length > 0" ng-click="openRemarkPrintScreen(assembly.Id);" style="margin-left: 20px;">
+                            <md-tooltip md-direction="top">Click to print remarks</md-tooltip>
+                            <div layout="row" layout-align="center center">
+                                <i class="fas fa-tag fa-2x" md-colors="{color: 'orange-800'}"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <p>To unblock this assembly, all remarks should be resolved. A remark can be resolved by creating a cause / solution pair for it and setting the solution to "Successful".</p>
+                <div>
+                    Nr of open remarks: {{remarks.length}}
+                    <ul>
+                        <li ng-repeat="remark in remarks"><em>{{remark.Name}} - {{remark.Description}}</em></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<div style="position: fixed; width: 100%; height: 100%; top: 0px; left: 0px; background-color: rgba(0,0,0,0.9); z-index: 3;" ng-if="assembly.ProductModelState.Name == 'Scrapped'">
+    <div class="errorContainer" style="position: absolute; width: 600px; height: auto; top: 150px; left: 50%; margin-left: -300px;background-color: rgba(0,0,0,0);">
+        <div layout="column">
+            <div layout="row">
+                <ng-md-icon icon="do_not_disturb_on" size="96" md-colors="{fill: 'orange-800'}"></ng-md-icon>
+                <h1 flex class="md-display-3">This assembly is Scrapped!</h1>
+            </div>
+            @if (User.IsInRole("Administrators"))
+            {
+                <div layout="row" layout-align="center right">
+                    <div flex></div>
+                    <md-button ng-click="unScrap(assembly.Id);">
+                        <ng-md-icon icon="loop" size="32" md-colors="{fill: 'orange-800'}"></ng-md-icon>&nbsp;Undo
+                    </md-button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<md-button class="md-button md-ink-ripple scrolling" aria-label="Place focus" style="position:fixed !important; right: 5px; bottom: 20px; opacity: 0.4; z-index: 2;" ng-click="placeFocusOnNextEmptyInputField()">
+    <md-tooltip md-direction="top">Place focus on next input field</md-tooltip>
+    <ng-md-icon icon="my_location" size="96"></ng-md-icon>
+</md-button>
+
+<md-button class="md-button md-ink-ripple scrolling" aria-label="Show / add notes" style="position:fixed !important; right: 5px; bottom: 120px; opacity: 0.4; z-index: 2; padding: 10px;" ng-click="showNotesDialog()">
+    <md-tooltip md-direction="top">Show / add notes</md-tooltip>
+    <ng-md-icon md-theme="docsDark" md-theme-watch="true" icon="forum" size="96" ng-if="notes.length > 0" md-badge="{{notes.length}}"></ng-md-icon>
+    <ng-md-icon md-theme="docsDark" md-theme-watch="true" icon="forum" size="96" ng-if="notes.length == 0"></ng-md-icon>
+</md-button>
+
+<md-button class="md-button md-ink-ripple scrolling" aria-label="Batch mode" style="position:fixed !important; right: 5px; bottom: 240px; z-index: 2; padding: 10px; {{batchModeItems.length > 0 ? 'border: 1px solid orange;': 'border: 0px;'}}" ng-click="showBottomSheet()" ng-if="!isInQCMode() && !assembly.ProductModelState.PreventBatchMode">
+    <md-tooltip md-direction="top">Click to enable Batch Mode</md-tooltip>
+    <div ng-if="batchModeItems.length > 0" style="font-size: 12px;">Batch serials:</div>
+    <div ng-repeat="item in batchModeItems" style="line-height: 16px;" layout="row" layout-align="center center">
+        <ng-md-icon icon="check_box" size="14" md-colors="{fill: 'accent'}"></ng-md-icon>
+        <div style="width: 60px;margin-top: 2px; font-size: 12px;">{{item.serial}}</div>
+    </div>
+    <ng-md-icon icon="share" size="96" md-badge="{{batchModeItems.length}}" md-colors="{fill: batchModeItems.length > 0 ? 'accent': 'grey-500'}"></ng-md-icon>
+</md-button>
+
+@if (@ConfigurationManager.AppSettings["tenancy"] == "none" || @ConfigurationManager.AppSettings["tenancy"] == "gent")
+{
+    <md-button class="md-button md-ink-ripple scrolling" ng-if="remarks.length > 0" ng-click="openRemarkPrintScreen(assembly.Id);" style="position:fixed !important; right: 5px; bottom: 360px; z-index: 2; padding: 10px;">
+        <md-tooltip md-direction="top">Click to print remarks</md-tooltip>
+        <div layout="row" layout-align="center center" style="margin-right: 10px;">
+            <i class="fas fa-tag fa-5x" md-colors="{color: 'warn'}"></i>
+        </div>
+    </md-button>
+}
+<script type="text/ng-template" id="qc-list-template.html" data-ng-init="closeMenuAndTitle();">
+    <md-dialog aria-label="Product notes" flex="60" flex-xs="85">
+        @*<md-toolbar layout="row" class="md-hue-3 md-w">
+                <div class="md-toolbar-tools">
+                    <span>Previous Quality Checks</span>
+                    <div flex></div>
+                </div>
+            </md-toolbar>*@
+
+        <md-toolbar class="md-accent">
+            <div class="md-toolbar-tools">
+                <h2 md-colors="{color: 'default-grey-100'}">Previous Quality Checks</h2>
+                <span flex></span>
+                <md-button ng-click="answer('cancel')" class="md-icon-button">
+                    <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+
+        <md-content>
+            <md-list flex>
+                <md-list-item class="md-3-line" ng-repeat="componentAssembly in data.componentAssemblies" ng-click="data.selectedQCView = $index">
+                    <div layout="column" flex>
+                        <div layout="row" layout-align="center center">
+                            <md-progress-circular md-mode="determinate" class="md-warn" value="{{componentAssembly.Progress}}" title="sqdqs"></md-progress-circular>
+
+                            <div class="md-list-item-text md-padding" layout="column" flex>
+                                <md-tooltip>Click to expand</md-tooltip>
+                                <div layout="row">
+                                    <div layout="column">
+                                        <h3>{{ componentAssembly.Progress }}%</h3>
+                                        <h4>{{ componentAssembly.StartDate }}</h4>
+                                        <p>{{ componentAssembly.EditedBy }}</p>
+                                    </div>
+                                    <div flex></div>
+                                    <div>
+                                        <md-chips><md-chip md-colors="{background: 'default-green'}" ng-show="$index == 0">CURRENT</md-chip></md-chips>
+                                    </div>
+                                </div>
+
+                                <p ng-hide="true">{{ currentIndex = $index }}</p>
+                            </div>
+
+                            <div flex></div>
+
+                            <md-button class="md-icon-button md-primary" aria-label="Settings" md-colors="{fill: 'default-grey-100'}" ng-click="data.selectedQCView = $index">
+                                <ng-md-icon icon="zoom_in" aria-label="View QC" size="32" ng-show="data.selectedQCView != currentIndex"></ng-md-icon>
+                                <ng-md-icon icon="zoom_out" aria-label="View QC" size="32" ng-show="data.selectedQCView == currentIndex"></ng-md-icon>
+                            </md-button>
+                        </div>
+
+                        <div layout="row" layout-align="start start" ng-show="data.selectedQCView == currentIndex">
+                            <h4>Scores:</h4>
+                        </div>
+
+                        <div ng-repeat="component in componentAssembly.ComponentAssemblies | orderBy:'SequenceOrder'" layout="row" layout-align="start start" ng-show="data.selectedQCView == currentIndex && component.ComponentName != 'Product serial' && component.ComponentName != 'Model name and version'">
+                            <div flex="10"></div>
+                            <div style="width: 35px; height: 35px; background-color: rgba(255, 255, 255, 0);" ng-show="component.Revision != 0 && component.Revision != 1 && component.Revision != 2 && component.Revision != 3">&nbsp;</div>
+                            <div style="width: 35px; height: 35px; background-color: green;" ng-show="component.Revision == 3">&nbsp;</div>
+                            <div style="width: 35px; height: 35px; background-color: yellow;" ng-show="component.Revision == 2">&nbsp;</div>
+                            <div style="width: 35px; height: 35px; background-color: orange;" ng-show="component.Revision == 1">&nbsp;</div>
+                            <div style="width: 35px; height: 35px; background-color: red;" ng-show="component.Revision == 0">&nbsp;</div>
+                            <div>&nbsp;&nbsp;&nbsp;@*#{{component.SequenceOrder}}*@ {{component.ComponentName}}</div>
+                            <div flex></div>
+                            <div>{{component.AssemblyDateTime}}</div>
+                        </div>
+                        <div><br /></div>
+                    </div>
+                </md-list-item>
+            </md-list>
+        </md-content>
+    </md-dialog>
+</script>
+
+<script type="text/ng-template" id="qc-template.html" data-ng-init="closeMenuAndTitle();">
+    <md-dialog aria-label="Product notes" flex="80" flex-xs="90">
+        <md-toolbar class="md-accent">
+            <div class="md-toolbar-tools">
+                <h2 md-colors="{color: 'default-grey-100'}">Quality Check</h2>
+                <span flex></span>
+                <md-button ng-click="answer('cancel')" class="md-icon-button">
+                    <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <div>
+            <iframe id="frameQC" ng-src="{{data}}" layout-fill flex></iframe>
+        </div>
+    </md-dialog>
+</script>
+
+<script type="text/ng-template" id="notes-template.html">
+    <md-dialog aria-label="Product notes" flex="80" flex-xs="90">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2>Product notes</h2>
+                <span flex></span>
+                <md-button ng-click="answer('cancel')" class="md-icon-button">
+                    <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-content class="md-padding">
+            <div layout="column">
+                <ul ng-if="data.length > 0" id="notesList">
+                    <li ng-repeat="note in data" class="md-caption"><b>[{{note.CreationDate}} - {{note.EditedBy}}]</b> {{note.Text}}</li>
+                </ul>
+                <div ng-if="data.length == 0">
+                    No notes yet, add some!
+                </div>
+                <div layout="row" layout-align="center center">
+                    <md-input-container flex="95">
+                        <label>Input new note</label>
+                        <input md-maxlength="1500" name="newNote" ng-model="newNote">
+                        <div ng-messages="newNote.$error">
+                            <div ng-message="maxlength">Note exceeds max input string length.</div>
+                        </div>
+                    </md-input-container>
+
+                    <md-button class="md-raised md-primary" ng-click="addNote(newNote); data.push( {EditedBy: '@User.Identity.Name', Text : newNote, CreationDate: '@DateTime.Now.ToString("u")'}); newNote = '';">
+                        add
+                    </md-button>
+                </div>
+            </div>
+        </md-content>
+    </md-dialog>
+</script>
+
+<script type="text/ng-template" id="batchmode-template.html">
+    <md-bottom-sheet layout="column">
+        <div layout="row" layout-align="center center">
+            <div>
+                <h1 md-colors="{color: 'accent'}">Batch Mode Serials</h1>
+                <div layout="row" layout-align="center center">
+                    <md-chips ng-model="batchModeItems" layout="row" layout-align="start center" md-add-on-blur="true" class="assemblyInputField" focus-me="{{focusField}}" readonly="false" md-transform-chip="addSerial($chip)" ng-click="listItemClick($index)" placeholder="Enter (scan) a serial...">
+                        <md-chip-template>
+                            <span>
+                                <strong>{{$chip.serial}}</strong>
+                            </span>
+                        </md-chip-template>
+                    </md-chips>
+                    <ng-md-icon icon="error" ng-if="batchModeWarnings.length > 0" aria-label="Wrong serial format" md-colors="{fill: 'warn'}"></ng-md-icon>
+                    <span md-colors="{color: 'warn'}">{{batchModeWarnings}}</span>
+                    <div flex></div>
+                </div>
+            </div>
+            <ng-md-icon icon="share" size="96" md-badge="{{batchModeItems.length}}" md-colors="{fill: batchModeItems.length > 0 ? 'accent': 'grey-500'}"></ng-md-icon>
+        </div>
+    </md-bottom-sheet>
+</script>
+</div>
+
+@*<script src="~/Scripts/Views/AssemblyScript.js?@DateTime.Now.Ticks.ToString()"></script>*@
+<script src="~/Scripts/Views/AssemblyScript.js"></script>   

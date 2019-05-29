@@ -1,0 +1,574 @@
+﻿@{
+    ViewBag.Title = "Product model states, symptom types, cause types and solution types";
+}
+
+<style>
+    .cornerIcon {
+        transform: rotate(45deg);
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        z-index: 0;
+        top: -40px;
+        left: -40px;
+        z-index: 1;
+    }
+
+        .cornerIcon svg {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            margin-top: -6px;
+            transform: rotate(-45deg);
+        }
+
+    md-card {
+        overflow: hidden;
+        position: relative;
+    }
+</style>
+
+<script src="~/Scripts/expansionPanel.service.js"></script>
+
+<div ng-controller="RemarkCtrl" data-ng-init="initStatesAndTypes()" ng-app="GTS">
+
+    <md-tabs md-dynamic-height="" md-selected="selectedTabIndex">
+        <div data-ng-init="initStatesAndTypes(0)">
+            <!-- TAB 1: Model States -->
+            <md-tab label="Model States">
+                <div>
+
+                    <md-list>
+                        <md-card>
+                            <md-card-content layout="column">
+                                <md-input-container>
+                                    <label>Filter</label>
+                                    <input type="text" ng-model="filterString" id="filterField" focus-me="true">
+                                </md-input-container>
+                            </md-card-content>
+                        </md-card>
+                        <md-item ng-repeat="modelState in modelStates | filter : filterString">
+                            <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row">
+                                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                                    <a ng-click="addEditModelState($event, modelState.Id, modelState.Name, modelState.Description, modelState.PreventBatchMode)" style="cursor: pointer;">
+                                        <ng-md-icon icon="mode_edit" class="md-hue-2" Size="24" aria-label="Edit model state"></ng-md-icon>
+                                        <md-tooltip md-direction="top">Edit model state</md-tooltip>
+                                    </a>
+                                </md-card-actions>
+                                <md-card-title layout="row" layout-align="center center" flex="90">
+                                    <md-card-title-text>
+                                        <span class="md-headline">
+                                            {{modelState.Name}}
+                                        </span>
+                                        <span class="md-subhead">{{modelState.Description}}</span>
+                                    </md-card-title-text>
+                                </md-card-title>
+                                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                                    <md-menu md-position-mode="target-right target">
+                                        <a ng-click="$mdMenu.open($event)">
+                                            <ng-md-icon icon="more_vert" aria-label="More..." style="cursor: pointer;"></ng-md-icon>
+                                            <md-tooltip md-direction="top">Show more actions...</md-tooltip>
+                                        </a>
+                                        <md-menu-content>
+                                            <md-menu-item>
+                                                <md-button class="md-secondary" ng-click="deleteModelState($event, modelState.Id, modelState.Name, modelState.Description, modelState.PreventBatchMode)">
+                                                    <div layout="row" layout-align="start center">
+                                                        <div>
+                                                            <md-icon md-font-set="fa fa-fw fa-archive" class="md-toggle-icon"></md-icon>
+                                                        </div>
+                                                        <div>&nbsp;Archive model state</div>
+                                                    </div>
+                                                </md-button>
+                                            </md-menu-item>
+                                        </md-menu-content>
+                                    </md-menu>
+                                </md-card-actions>
+                                <div class="cornerIcon" md-colors="{background: 'warn'}" ng-if="modelState.PreventBatchMode">
+                                    <i class="fas fa-share-alt" md-colors="{color: 'grey-A100'}"></i>
+                                    <md-tooltip>This state prevents batch mode operation.</md-tooltip>
+                                </div>
+                            </md-card>
+                        </md-item>
+                    </md-list>
+                </div>
+
+                <div class="md-padding" id="popupContainer" ng-cloak>
+                    <md-content flex layout="column" layout-padding>
+                        <script type="text/ng-template" id="modelstate-template.html">
+
+                            <md-dialog aria-label="Product model state" flex="40" flex-xs="80">
+
+                                <form name="modelStateForm" data-ng-init="initModelStateForm()">
+
+                                    <md-toolbar>
+                                        <div class="md-toolbar-tools">
+                                            <h2>Product model state</h2>
+                                            <span flex></span>
+                                            <md-button ng-click="cancel()" class="md-icon-button">
+                                                <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                                            </md-button>
+                                        </div>
+                                    </md-toolbar>
+
+                                    <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                                        <div flex>
+                                            <ul>
+                                                <md-item ng-repeat="error in dialogActionResult">
+                                                    <li>{{error}}</li>
+                                                </md-item>
+                                            </ul>
+                                        </div>
+
+                                        <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                            <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                                        </md-button>
+                                    </div>
+
+                                    <div class="md-padding">
+                                        <md-input-container flex class="md-block">
+                                            <input md-maxlength="90" required="" name="ComponentName" ng-model="modelState.Name">
+                                        </md-input-container>
+
+                                        <md-input-container flex class="md-block">
+                                            <label>Description</label>
+                                            <textarea name="ComponentDescription" cols="40" rows="1" md-maxlength="250" ng-model="modelState.Description"></textarea>
+
+                                            <div ng-messages="modelStateForm.ComponentDescription.$error">
+                                                <div ng-message="md-maxlength">The description must be less than 250 characters long.</div>
+                                            </div>
+                                        </md-input-container>
+
+                                        <md-input-container flex class="md-block">
+                                            <div layout="row">
+                                                <div flex></div>
+                                                <md-switch ng-model="modelState.PreventBatchMode" aria-label="Prevent batch mode">Prevent batch mode?</md-switch>
+                                            </div>
+                                        </md-input-container>
+
+                                        <md-dialog-actions layout="row">
+                                            <span flex></span>
+                                            <md-button ng-click="cancel()">
+                                                Cancel
+                                            </md-button>
+                                            <md-button ng-click="saveProductModelState();" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="modelStateForm.$invalid || isSaving">
+                                                Submit
+                                                <div>
+                                                    <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                                                </div>
+                                            </md-button>
+                                        </md-dialog-actions>
+                                    </div>
+                                </form>
+                            </md-dialog>
+                        </script>
+                    </md-content>
+                </div>
+            </md-tab>
+
+            <!-- TAB 2: Remark Types -->
+            <md-tab label="Remark Symptom Types">
+                <div>
+                    <md-list>
+                        <md-card>
+                            <md-card-content layout="column">
+                                <md-input-container>
+                                    <label>Filter</label>
+                                    <input type="text" ng-model="filterString" id="filterField" focus-me="true">
+                                </md-input-container>
+                            </md-card-content>
+                        </md-card>
+                        <md-item ng-repeat="remarkType in remarkTypes | filter : filterString">
+                            <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row">
+                                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                                    <a ng-click="addEditRemarkType($event, remarkType.Id, remarkType.Name, remarkType.Description)" style="cursor: pointer;">
+                                        <ng-md-icon icon="mode_edit" class="md-hue-2" Size="24" aria-label="Edit remark type"></ng-md-icon>
+                                        <md-tooltip md-direction="top">Edit remark symptom type</md-tooltip>
+                                    </a>
+                                </md-card-actions>
+                                <md-card-title layout="row" layout-align="center start" flex="90">
+                                    <md-card-title-text>
+                                        <span class="md-headline">
+                                            {{remarkType.Name}}
+                                        </span>
+                                        <span class="md-subhead">{{remarkType.Description}}</span>
+                                    </md-card-title-text>
+                                </md-card-title>
+                                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                                    <md-menu md-position-mode="target-right target">
+                                        <a ng-click="$mdMenu.open($event)">
+                                            <ng-md-icon icon="more_vert" aria-label="More..." style="cursor: pointer;"></ng-md-icon>
+                                            <md-tooltip md-direction="top">Show more actions...</md-tooltip>
+                                        </a>
+                                        <md-menu-content>
+                                            <md-menu-item>
+                                                <md-button class="md-secondary" ng-click="deleteRemarkType($event, remarkType.Id, remarkType.Name, remarkType.Description)">
+                                                    <div layout="row" layout-align="start center">
+                                                        <div>
+                                                            <md-icon md-font-set="fa fa-fw fa-archive" class="md-toggle-icon"></md-icon>
+                                                        </div>
+                                                        <div>&nbsp;Archive symptom type</div>
+                                                    </div>
+                                                </md-button>
+                                            </md-menu-item>
+                                        </md-menu-content>
+                                    </md-menu>
+                                </md-card-actions>
+                            </md-card>
+                        </md-item>
+                    </md-list>
+                </div>
+
+                <div class="md-padding" id="popupContainer" ng-cloak>
+                    <md-content flex layout="column" layout-padding>
+                        <script type="text/ng-template" id="remarkType-template.html">
+
+                            <md-dialog aria-label="Remark symptom type" flex="40" flex-xs="80">
+
+                                <form name="remarkTypeForm" data-ng-init="initRemarkTypeForm()">
+
+                                    <md-toolbar>
+                                        <div class="md-toolbar-tools">
+                                            <h2>Remark symptom type</h2>
+                                            <span flex></span>
+                                            <md-button ng-click="cancel()" class="md-icon-button">
+                                                <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                                            </md-button>
+                                        </div>
+                                    </md-toolbar>
+
+                                    <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                                        <div flex>
+                                            <ul>
+                                                <md-item ng-repeat="error in dialogActionResult">
+                                                    <li>{{error}}</li>
+                                                </md-item>
+                                            </ul>
+                                        </div>
+
+                                        <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                            <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                                        </md-button>
+                                    </div>
+
+                                    <div class="md-padding">
+                                        <md-input-container flex class="md-block">
+                                            <label>Name</label>
+                                            <input md-maxlength="90" required="" name="ComponentName" ng-model="remarkType.Name">
+
+                                            <div ng-messages="remarkTypeForm.Name.$error">
+                                                <div ng-message="required">This is required.</div>
+                                                <div ng-message="md-maxlength">The name must be less than 90 characters long.</div>
+                                            </div>
+                                        </md-input-container>
+
+                                        <md-input-container flex class="md-block">
+                                            <label>Description</label>
+                                            <textarea name="ComponentDescription" cols="40" rows="1" md-maxlength="250" ng-model="remarkType.Description"></textarea>
+
+                                            <div ng-messages="remarkTypeForm.ComponentDescription.$error">
+                                                <div ng-message="md-maxlength">The description must be less than 250 characters long.</div>
+                                            </div>
+                                        </md-input-container>
+
+                                        <md-dialog-actions layout="row">
+                                            <span flex></span>
+                                            <md-button ng-click="cancel()">
+                                                Cancel
+                                            </md-button>
+                                            <md-button ng-click="saveRemarkSymptomType();" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="remarkTypeForm.$invalid || isSaving">
+                                                Submit
+                                                <div>
+                                                    <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                                                </div>
+                                            </md-button>
+                                        </md-dialog-actions>
+                                    </div>
+                                </form>
+                            </md-dialog>
+                        </script>
+                    </md-content>
+                </div>
+            </md-tab>
+
+            <!-- Tab 3: Remark Cause Types -->
+            <md-tab label="Remark Cause Types">
+                <div>
+                    <md-list>
+                        <md-card>
+                            <md-card-content layout="column">
+                                <md-input-container>
+                                    <label>Filter</label>
+                                    <input type="text" ng-model="filterString" id="filterField" focus-me="true">
+                                </md-input-container>
+                            </md-card-content>
+                        </md-card>
+                        <md-item ng-repeat="causeType in causeTypes | filter : filterString">
+                            <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row">
+                                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                                    <a ng-click="addEditCauseType($event, causeType.Id, causeType.Name, causeType.Description)" style="cursor: pointer;">
+                                        <ng-md-icon icon="mode_edit" class="md-hue-2" Size="24" aria-label="Edit remark type"></ng-md-icon>
+                                        <md-tooltip md-direction="top">Edit remark cause type</md-tooltip>
+                                    </a>
+                                </md-card-actions>
+                                <md-card-title layout="row" layout-align="center start" flex="90">
+                                    <md-card-title-text>
+                                        <span class="md-headline">
+                                            {{causeType.Name}}
+                                        </span>
+                                        <span class="md-subhead">{{causeType.Description}}</span>
+                                    </md-card-title-text>
+                                </md-card-title>
+                                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                                    <md-menu md-position-mode="target-right target">
+                                        <a ng-click="$mdMenu.open($event)">
+                                            <ng-md-icon icon="more_vert" aria-label="More..." style="cursor: pointer;"></ng-md-icon>
+                                            <md-tooltip md-direction="top">Show more actions...</md-tooltip>
+                                        </a>
+                                        <md-menu-content>
+                                            <md-menu-item>
+                                                <md-button class="md-secondary" ng-click="deleteCauseType($event, causeType.Id, causeType.Name, causeType.Description)">
+                                                    <div layout="row" layout-align="start center">
+                                                        <div>
+                                                            <md-icon md-font-set="fa fa-fw fa-archive" class="md-toggle-icon"></md-icon>
+                                                        </div>
+                                                        <div>&nbsp;Archive cause type</div>
+                                                    </div>
+                                                </md-button>
+                                            </md-menu-item>
+                                        </md-menu-content>
+                                    </md-menu>
+                                </md-card-actions>
+                            </md-card>
+                        </md-item>
+                    </md-list>
+                </div>
+
+                <div class="md-padding" id="popupContainer" ng-cloak>
+                    <md-content flex layout="column" layout-padding>
+                        <script type="text/ng-template" id="causeType-template.html">
+
+                            <md-dialog aria-label="Remark cause type" flex="40" flex-xs="80">
+
+                                <form name="causeTypeForm" data-ng-init="initCauseTypeForm()">
+
+                                    <md-toolbar>
+                                        <div class="md-toolbar-tools">
+                                            <h2>Remark cause type</h2>
+                                            <span flex></span>
+                                            <md-button ng-click="cancel()" class="md-icon-button">
+                                                <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                                            </md-button>
+                                        </div>
+                                    </md-toolbar>
+
+                                    <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                                        <div flex>
+                                            <ul>
+                                                <md-item ng-repeat="error in dialogActionResult">
+                                                    <li>{{error}}</li>
+                                                </md-item>
+                                            </ul>
+                                        </div>
+
+                                        <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                            <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                                        </md-button>
+                                    </div>
+
+                                    <div class="md-padding">
+                                        <md-input-container flex class="md-block">
+                                            <label>Name</label>
+                                            <input md-maxlength="90" required="" name="ComponentName" ng-model="causeType.Name">
+
+                                            <div ng-messages="causeTypeForm.Name.$error">
+                                                <div ng-message="required">This is required.</div>
+                                                <div ng-message="md-maxlength">The name must be less than 90 characters long.</div>
+                                            </div>
+                                        </md-input-container>
+
+                                        <md-input-container flex class="md-block">
+                                            <label>Description</label>
+                                            <textarea name="ComponentDescription" cols="40" rows="1" md-maxlength="250" ng-model="causeType.Description"></textarea>
+
+                                            <div ng-messages="causeTypeForm.ComponentDescription.$error">
+                                                <div ng-message="md-maxlength">The description must be less than 250 characters long.</div>
+                                            </div>
+                                        </md-input-container>
+
+                                        <md-dialog-actions layout="row">
+                                            <span flex></span>
+                                            <md-button ng-click="cancel()">
+                                                Cancel
+                                            </md-button>
+                                            <md-button ng-click="saveRemarkCauseType();" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="causeTypeForm.$invalid || isSaving">
+                                                Submit
+                                                <div>
+                                                    <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                                                </div>
+                                            </md-button>
+                                        </md-dialog-actions>
+                                    </div>
+                                </form>
+                            </md-dialog>
+                        </script>
+                    </md-content>
+                </div>
+            </md-tab>
+
+            <!-- Tab 4: Remark Solution Types -->
+            <md-tab label="Remark Solution Types">
+                <div>
+                    <md-list>
+                        <md-card>
+                            <md-card-content layout="column">
+                                <md-input-container>
+                                    <label>Filter</label>
+                                    <input type="text" ng-model="filterString" id="filterField" focus-me="true">
+                                </md-input-container>
+                            </md-card-content>
+                        </md-card>
+                        <md-item ng-repeat="solutionType in solutionTypes | filter : filterString">
+                            <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row">
+                                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                                    <a ng-click="addEditSolutionType($event, solutionType.Id, solutionType.Name, solutionType.Description)" style="cursor: pointer;">
+                                        <ng-md-icon icon="mode_edit" class="md-hue-2" Size="24" aria-label="Edit remark type"></ng-md-icon>
+                                        <md-tooltip md-direction="top">Edit remark solution type</md-tooltip>
+                                    </a>
+                                </md-card-actions>
+                                <md-card-title layout="row" layout-align="center start" flex="90">
+                                    <md-card-title-text>
+                                        <span class="md-headline">
+                                            {{solutionType.Name}}
+                                        </span>
+                                        <span class="md-subhead">{{solutionType.Description}}</span>
+                                    </md-card-title-text>
+                                </md-card-title>
+                                <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                                    <md-menu md-position-mode="target-right target">
+                                        <a ng-click="$mdMenu.open($event)">
+                                            <ng-md-icon icon="more_vert" aria-label="More..." style="cursor: pointer;"></ng-md-icon>
+                                            <md-tooltip md-direction="top">Show more actions...</md-tooltip>
+                                        </a>
+                                        <md-menu-content>
+                                            <md-menu-item>
+                                                <md-button class="md-secondary" ng-click="deleteSolutionType($event, solutionType.Id, solutionType.Name, solutionType.Description)">
+                                                    <div layout="row" layout-align="start center">
+                                                        <div>
+                                                            <md-icon md-font-set="fa fa-fw fa-archive" class="md-toggle-icon"></md-icon>
+                                                        </div>
+                                                        <div>&nbsp;Archive solution type</div>
+                                                    </div>
+                                                </md-button>
+                                            </md-menu-item>
+                                        </md-menu-content>
+                                    </md-menu>
+                                </md-card-actions>
+                            </md-card>
+                        </md-item>
+                    </md-list>
+                </div>
+
+                <div class="md-padding" id="popupContainer" ng-cloak>
+                    <md-content flex layout="column" layout-padding>
+                        <script type="text/ng-template" id="solutionType-template.html">
+
+                            <md-dialog aria-label="Remark solution type" flex="40" flex-xs="80">
+
+                                <form name="solutionTypeForm" data-ng-init="initSolutionTypeForm()">
+                                    <md-toolbar>
+                                        <div class="md-toolbar-tools">
+                                            <h2>Remark solution type</h2>
+                                            <span flex></span>
+                                            <md-button ng-click="cancel()" class="md-icon-button">
+                                                <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                                            </md-button>
+                                        </div>
+                                    </md-toolbar>
+
+                                    <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                                        <div flex>
+                                            <ul>
+                                                <md-item ng-repeat="error in dialogActionResult">
+                                                    <li>{{error}}</li>
+                                                </md-item>
+                                            </ul>
+                                        </div>
+
+                                        <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                            <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                                        </md-button>
+                                    </div>
+
+                                    <div class="md-padding">
+                                        <md-input-container flex class="md-block">
+                                            <label>Name</label>
+                                            <input md-maxlength="90" required="" name="ComponentName" ng-model="solutionType.Name">
+
+                                            <div ng-messages="solutionTypeForm.ComponentName.$error">
+                                                <div ng-message="required">This is required.</div>
+                                                <div ng-message="md-maxlength">The name must be less than 90 characters long.</div>
+                                            </div>
+                                        </md-input-container>
+
+                                        <md-input-container flex class="md-block">
+                                            <label>Description</label>
+                                            <textarea name="ComponentDescription" cols="40" rows="1" md-maxlength="250" ng-model="solutionType.Description"></textarea>
+
+                                            <div ng-messages="solutionTypeForm.ComponentDescription.$error">
+                                                <div ng-message="md-maxlength">The description must be less than 250 characters long.</div>
+                                            </div>
+                                        </md-input-container>
+
+                                        <md-dialog-actions layout="row" class="md-block">
+                                            <span flex></span>
+                                            <md-button ng-click="cancel()">
+                                                Cancel
+                                            </md-button>
+                                            <md-button ng-click="saveRemarkSolutionType();" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="causeTypeForm.$invalid || isSaving">
+                                                Submit
+                                                <div>
+                                                    <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                                                </div>
+                                            </md-button>
+                                        </md-dialog-actions>
+                                    </div>
+                                </form>
+                            </md-dialog>
+                        </script>
+                    </md-content>
+                </div>
+            </md-tab>
+        </div>
+    </md-tabs>
+
+    <md-fab-speed-dial md-direction="up" md-open="fabMenu.isOpen" class="md-scale md-fab-bottom-right" ng-mouseenter="fabMenu.isOpen=true" ng-mouseleave="fabMenu.isOpen=false" ng-disabled="causeTypeForm.$invalid || isSaving" style="position:fixed !important;">
+        <md-fab-trigger>
+            <md-button aria-label="menu" class="md-fab md-warn">
+                <ng-md-icon icon="menu"></ng-md-icon>
+            </md-button>
+        </md-fab-trigger>
+
+        <md-fab-actions>
+            <md-button class="md-fab md-raised md-mini md-accent" aria-label="New product model state" ng-click="addEditModelState($event, '')">
+                <md-tooltip md-direction="top">New product model state</md-tooltip>
+                <ng-md-icon icon="flag" style="fill:white;"></ng-md-icon>
+            </md-button>
+            <md-button class="md-fab md-raised md-mini md-accent" aria-label="New remark type" ng-click="addEditRemarkType($event, '', '')">
+                <md-tooltip md-direction="top">New remark symptom type</md-tooltip>
+                <ng-md-icon icon="do_not_disturb_on" style="fill:white;"></ng-md-icon>
+            </md-button>
+            <md-button class="md-fab md-raised md-mini md-accent" aria-label="New remark cause type" ng-click="addEditCauseType($event, '', '')">
+                <md-tooltip md-direction="top">New remark cause type</md-tooltip>
+                <ng-md-icon icon="find_in_page" style="fill:white;"></ng-md-icon>
+            </md-button>
+            <md-button class="md-fab md-raised md-mini md-accent" aria-label="New remark solution type" ng-click="addEditSolutionType($event, '', '')">
+                <md-tooltip md-direction="top">New remark solution type</md-tooltip>
+                <ng-md-icon icon="healing" style="fill:white;"></ng-md-icon>
+            </md-button>
+        </md-fab-actions>
+    </md-fab-speed-dial>
+</div>
+
+<script src="~/Scripts/Views/RemarkScripts.js?@DateTime.Now.Ticks.ToString()"></script>@{
+    ViewBag.Title = "Product model states, symptom types, cause types and solution types";
+}

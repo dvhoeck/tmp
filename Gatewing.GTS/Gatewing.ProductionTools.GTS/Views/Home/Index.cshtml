@@ -1,0 +1,134 @@
+﻿@{
+    ViewBag.Title = "Dashboard";
+}
+<div layout="column" md-padding data-ng-init="setContentWidth(100); getGtsStats(); hideTitleBar();">
+    @if (Request.IsAuthenticated)
+    {
+        <div layout="row">
+            <div layout="column" flex md-theme="default">
+                <div layout="column" layout-align="center center">
+                    <div style="margin-top: 30px;">
+                        <md-button ng-click="showOpenAssembly()">
+                            <md-tooltip md-direction="top">Retrieve or create assemblies</md-tooltip>
+                            @*<ng-md-icon icon="build" size="128" md-colors="{fill: 'accent-800'}" aria-label="Assemble"></ng-md-icon>*@
+                            <md-icon md-font-set="fas fa-wrench fa-10x" data-fa-transform="shrink-8" data-fa-mask="fas fa-square fa-10x" md-colors="{color: 'accent-800'}"></md-icon>
+                        </md-button>
+                    </div>
+                    <div>
+                        <div class="md-title" md-theme="docsDark" md-theme-watch="true" style="text-align: center;">Assemble</div>
+                        <div hide-xs class="lead" style="text-align: center;">Scan a product serial to get started.<br />Alternatively, click the wrench icon.</div>
+                    </div>
+                </div>
+            </div>
+            @if (User.IsInRole("Administrators"))
+            {
+                <div layout="column" flex md-theme="default">
+                    <div layout="column" layout-align="center center">
+                        <div style="margin-top: 30px;">
+                            <a href="/Products">
+                                <md-button>
+                                    <md-tooltip md-direction="top">Go to the list of product models</md-tooltip>
+                                    @*<ng-md-icon icon="settings" size="128" md-colors="{fill: 'grey-800'}" aria-label="Manage product models"></ng-md-icon>*@
+                                    <md-icon md-font-set="fas fa-cogs fa-10x" data-fa-transform="shrink-8" data-fa-mask="fas fa-square fa-10x" md-colors="{color: 'grey-800'}"></md-icon>
+                                </md-button>
+                            </a>
+                        </div>
+                        <div>
+                            <div class="md-title" style="text-align: center;">Manage product models</div>
+                            <div hide-xs class="lead" style="text-align: center;">Click the button to manage product<br />models & product components.</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div layout="row">
+            @if (User.IsInRole("Administrators"))
+            {
+                <div layout="column" flex>
+                    <div layout="column" layout-align="center center" md-theme="default">
+                        <div style="margin-top: 30px;">
+                            <a href="/Reports">
+                                <md-button>
+                                    <md-tooltip md-direction="top">View reports</md-tooltip>
+                                    @*<ng-md-icon icon="assessment" size="128" md-colors="{fill: 'grey-800'}" aria-label="Reports"></ng-md-icon>*@
+                                    <md-icon md-font-set="fas fa-chart-pie fa-10x" data-fa-transform="shrink-8" data-fa-mask="fas fa-square fa-10x" md-colors="{color: 'grey-800'}"></md-icon>
+                                </md-button>
+                            </a>
+                        </div>
+                        <div>
+                            <div class="md-title" style="text-align: center;">Reports</div>
+                            <div hide-xs class="lead">View, create and edit reports.</div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div layout="column" flex md-theme="default">
+                <div layout="column" layout-align="center center">
+                    <div style="margin-top: 30px;">
+                        <a href="/Remark/RemarkList">
+                            <md-button>
+                                <md-tooltip md-direction="top">View remarks on assemblies</md-tooltip>
+                                @*<ng-md-icon icon="do_not_disturb_on" size="128" md-colors="{fill: 'accent-800'}" aria-label="Remarks"></ng-md-icon>*@
+                                <md-icon md-font-set="fas fa-microscope fa-10x" data-fa-transform="shrink-8" data-fa-mask="fas fa-square fa-10x" md-colors="{color: 'accent-800'}"></md-icon>
+                            </md-button>
+                        </a>
+                    </div>
+                    <div>
+                        <div class="md-title" style="text-align: center;">Remarks</div>
+                        <div hide-xs class="lead">View and manage remarks.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <div>
+        <br />
+        <br />
+        <br />
+    </div>
+    <div layout="row" md-padding>
+        <div flex layout="column" layout-fill style="border: 1px solid black; background: url('/Content/Images/20170809-IMG_0921.jpg') no-repeat; background-size: 100% 100%;">
+
+            <div style="height:50px;"></div>
+            <div layout="row">
+                <div flex="25" layout="column" layout-align="center center">
+                    <div class="md-display-4" hide-xs md-colors="{color: 'accent-800'}">{{modelCount}}</div>
+                    <div class="md-display-2" hide-gt-xs md-colors="{color: 'accent-800'}">{{modelCount}}</div>
+                    <div class="md-title" hide-xs md-colors="{color: 'grey-600'}">models</div>
+                    <div class="md-caption" hide-gt-xs md-colors="{color: 'grey-600'}">models</div>
+                </div>
+                <div flex="25" layout="column" layout-align="center center">
+                    <div class="md-display-4" hide-xs md-colors="{color: 'accent-800'}">{{assemblyCount}}</div>
+                    <div class="md-display-2" hide-gt-xs md-colors="{color: 'accent-800'}">{{assemblyCount}}</div>
+                    <div class="md-title" hide-xs md-colors="{color: 'grey-600'}">assemblies</div>
+                    <div class="md-caption" hide-gt-xs md-colors="{color: 'grey-600'}">assemblies</div>
+                </div>
+                <div flex="25" layout="column" layout-align="center center">
+                    <div class="md-display-4" hide-xs md-colors="{color: 'accent-800'}">{{remarkCount}}</div>
+                    <div class="md-display-2" hide-gt-xs md-colors="{color: 'accent-800'}">{{remarkCount}}</div>
+                    <div class="md-title" hide-xs md-colors="{color: 'grey-600'}">remarks</div>
+                    <div class="md-caption" hide-gt-xs md-colors="{color: 'grey-600'}">remarks</div>
+                </div>
+                <div flex="25" layout="column" layout-align="center center">
+                    <div class="md-display-4" hide-xs md-colors="{color: 'accent-800'}">{{userCount}}</div>
+                    <div class="md-display-2" hide-gt-xs md-colors="{color: 'accent-800'}">{{userCount}}</div>
+                    <div class="md-title" hide-xs md-colors="{color: 'grey-600'}">users</div>
+                    <div class="md-caption" hide-gt-xs md-colors="{color: 'grey-600'}">users</div>
+                </div>
+            </div>
+            <div style="height:50px;"></div>
+        </div>
+    </div>
+    <br /><br /><br />
+    <div layout="row" layout-align="center center">
+        <img src="~/Content/Images/LogoGTSLarge.png" />
+    </div>
+    <br /><br /><br />
+    <div layout="column" layout-align="center center">
+        v @typeof(Gatewing.ProductionTools.GTS.Controllers.BaseController).Assembly.GetName().Version
+    </div>
+    <div>&nbsp;</div>
+    <div layout="column" layout-align="center center">
+        Copyright Delair @DateTime.Now.Year
+    </div>
+</div>

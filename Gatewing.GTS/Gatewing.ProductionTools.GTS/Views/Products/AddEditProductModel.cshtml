@@ -1,0 +1,642 @@
+﻿@{
+    ViewBag.Title = "Product model";
+}
+<link rel="stylesheet" href="~/Content/expansionPanels-theme.css">
+<link rel="stylesheet" href="~/Content/expansionPanels.css">
+<script src="~/Scripts/expansionPanel.directive.js"></script>
+<script src="~/Scripts/expansionPanel.service.js"></script>
+<script src="~/Scripts/expansionPanelCollapsed.directive.js"></script>
+<script src="~/Scripts/expansionPanelExpanded.directive.js"></script>
+<script src="~/Scripts/expansionPanelFooter.directive.js"></script>
+<script src="~/Scripts/expansionPanelGroup.directive.js"></script>
+<script src="~/Scripts/expansionPanelGroup.service.js"></script>
+<script src="~/Scripts/expansionPanelHeader.directive.js"></script>
+<script src="~/Scripts/expansionPanelIcon.directive.js"></script>
+
+<style>
+    .md-tooltip {
+        height: auto;
+    }
+
+    md-checkbox {
+        margin-bottom: 0px;
+    }
+
+    md-progress-linear {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+    }
+</style>
+
+<script>
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("divId", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("divId");
+        ev.target.appendChild(document.getElementById(data));
+    }
+</script>
+
+<div ng-controller="ProductsCtrl" layout="column" ng-cloak="" class="inputdemoErrors" ng-app="GTS" data-ng-init="initProducts();">
+    <md-content layout-padding="">
+        <section>
+
+            <!-- RELEASE HEADER -->
+            <md-subheader class="md-warn">Release details</md-subheader>
+
+            <!-- RELEASE INFO CONTAINER -->
+            <div ng-disabled="isSaving" layout="column" ng-show="'00000000-0000-0000-0000-000000000000' != product.Id.toString()">
+
+                <md-expansion-panel md-component-id="panelCause" auto-expand="true" class="{{ReleaseId ? 'md-padding infoContainer': 'md-padding errorContainer'}}" ng-form="releaseForm">
+                    <md-expansion-panel-collapsed style="line-height:normal;">
+                        <div layout="row" layout-align="center center" aria-label="click to expand" flex>
+                            <div ng-if="!ReleaseId" flex>Model is unreleased</div>
+                            <div ng-if="ReleaseId" flex>
+                                Model is released at {{ReleaseDate}}: {{ReleaseVersion}} - "{{PreviousReleaseComment}}"
+                            </div>
+                            <md-button ng-click="showChanges(product.Id, $event)" class="md-raised md-primary" aria-label="Show changes">
+                                Show changes
+                            </md-button>
+                        </div>
+                        <md-tooltip>Click to expand</md-tooltip>
+                    </md-expansion-panel-collapsed>
+                    <md-expansion-panel-expanded>
+                        <md-expansion-panel-header ng-click="$panel.collapse();">
+                            <div layout="column">
+                                <h3>Current release</h3>
+                                <div layout="row">
+                                    <div></div>
+                                    <div ng-if="!ReleaseId" flex><i>Model is unreleased</i></div>
+                                    <div ng-if="ReleaseId" flex><i>{{ReleaseDate}}: {{ReleaseVersion}} - "{{PreviousReleaseComment}}"</i></div>
+                                </div>
+                            </div>
+                        </md-expansion-panel-header>
+                        <md-expansion-panel-content style="border-bottom: 0px solid !important; border-top: 0px solid !important;">
+                            <div layout="column">
+                                <h3>New release</h3>
+                                <div layout="column" ng-if="AssociatedProductModelList != null && AssociatedProductModelList.length > 0">
+                                    <i>These models reference the current model and will automatically get a new release<br /><br /></i>
+                                    <ul>
+                                        <li ng-repeat="model in AssociatedProductModelList">{{model.Name}} v{{model.Version}}</li>
+                                    </ul>
+                                </div>
+                                <div layout="column" ng-if="AssociatedProductModelList == null || AssociatedProductModelList.length == 0">
+                                    No models reference the current model
+                                </div>
+                            </div>
+                            <md-input-container class="md-block">
+                                <label>New release comment</label>
+                                <input md-maxlength="256" required="" name="NewReleaseComment" ng-model="ReleaseComment">
+                                <div ng-messages="releaseForm.NewReleaseComment.$error">
+                                    <div ng-message="required">This is required.</div>
+                                </div>
+                            </md-input-container>
+                            <note msg="'Currently the system does not allow release cascading beyond one level'"></note>
+                            <md-input-container class="md-block" style="margin-bottom: -50px;">
+                                <div layout="row" class="md-padding">
+                                    <div flex></div>
+                                    <a href="/Products/CurrentModelRelease/{{ReleaseId}}">
+                                        <md-button class="md-primary md-padding" layout="row" layout-align="center center">
+                                            View current version...
+                                            <ng-md-icon icon="open_in_new" aria-label="drag to reorder" md-colors="{fill: 'grey'}">
+                                            </ng-md-icon>
+                                        </md-button>
+                                    </a>
+                                    <md-button ng-click="release(ReleaseComment)" class="md-raised md-primary" ng-disabled="productForm.$dirty || !releaseForm.$valid || isSaving">
+                                        Release...
+                                        <div>
+                                            <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                                        </div>
+                                    </md-button>
+
+                                    <md-button ng-click="showChanges(product.Id, $event)" class="md-raised md-primary" aria-label="Show changes">
+                                        Show changes
+                                    </md-button>
+                                </div>
+                            </md-input-container>
+                        </md-expansion-panel-content>
+
+                        <md-tooltip>Click to collapse</md-tooltip>
+                    </md-expansion-panel-expanded>
+                </md-expansion-panel>
+            </div>
+        </section>
+
+        <!-- MODEL EDIT FORM -->
+        <section>
+            <md-subheader class="md-warn">Model details</md-subheader>
+            <ng-form ng-disabled="isSaving" name="productForm" id="productForm">
+                <div layout="row" layout-xs="column" class="md-padding" flex-gt-sx>
+                    <md-input-container class="md-block">
+                        <label>Model type</label><br /><br />
+                        <md-radio-group ng-model="product.ModelType" layout="row" layout-align="start center" required>
+                            <md-radio-button value="1">Standard</md-radio-button>
+                            <md-radio-button value="2">Automatically Created</md-radio-button>
+                            <md-radio-button value="4">Quality Check</md-radio-button>
+                        </md-radio-group>
+                        <div layout="row">
+                            <note ng-if="product.ModelType == 2" msg="'Enabling auto creation means that when you reference this part in an assembly and scan a serial that is not used yet, an instance of this part will be created. If an existing serial
+                        is used, the same restrictions are applied (serial can only be used once.)'">
+                            </note>
+                            <note ng-if="product.ModelType == 4" msg="'Defining a model as Quality Check means that it will be used in another model as a component, you&rsquo;ll be able to move from the parent model to this QC model and back in the assembly page.'">
+                            </note>
+                        </div>
+                        <div ng-messages="productForm.ModelType.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+                </div>
+                <div layout="row" layout-xs="column" class="md-padding" flex-gt-sx>
+                    <md-input-container flex-gt-xs class="md-block">
+                        <label>Name</label>
+                        <input md-maxlength="90" required="" name="Name" ng-model="product.Name" ng-disabled="isEditing">
+                        <div ng-messages="productForm.Name.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="md-maxlength">The description must be less than 90 characters long.</div>
+                        </div>
+                    </md-input-container>
+
+                    <div layout="row" class="md-padding" hide-gt-xs>
+                        <md-input-container flex-xs="10">
+                            <span class="md-caption">Version</span>
+                            <span class="md-title">{{product.Version}}</span>
+                            @*<input name="Version" ng-model="product.Version" ng-disabled="true">*@
+                            <div ng-messages="productForm.Version.$error">
+                            </div>
+                        </md-input-container>
+
+                        <md-input-container flex-xs="90">
+                            <label>Date</label>
+                            <md-datepicker ng-model="product.Date" md-placeholder="Enter date" ng-disabled="isEditing"></md-datepicker>
+                            <div ng-messages="productForm.Date.$error">
+                                <div ng-message="required">This is required.</div>
+                            </div>
+                        </md-input-container>
+                    </div>
+
+                    <div layout="column" layout-align="center center" style="margin-top: -40px;">
+                        <span class="md-caption">Edit version</span>
+                        <span class="md-title" style="margin-top: 5px;">{{product.Version}}</span>
+                    </div>
+                </div>
+
+                <div layout="row" layout-xs="column" class="md-padding" flex-gt-sx>
+                    <md-input-container flex>
+                        <label>Description</label>
+                        <input required="" md-maxlength="250" name="Comment" ng-model="product.Comment" ng-disabled="isEditing">
+                        <div ng-messages="productForm.Comment.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="md-maxlength">The description must be less than 16 characters long.</div>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container flex-gt-sx="15" hide-xs>
+                        <label>Date</label>
+                        <md-datepicker ng-model="product.Date" md-placeholder="Enter date" ng-disabled="isEditing"></md-datepicker>
+                        <div ng-messages="productForm.Date.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+                </div>
+                <div layout="row" layout-xs="column" class="md-padding" flex-gt-sx>
+                    <md-input-container flex class="md-block" ng-if="product.ModelType != 4">
+                        <md-tooltip md-direction="left">For example: "EBX[0-9]{5}" means that "EBX" <br />followed by any 5 digits is valid. <br />"[a-zA-Z]{7}123 means any 7 letters <br />(uppercase and lowercase) followed by "123""</md-tooltip>
+                        <label>Serial format</label>
+                        <input md-maxlength="256" required="" name="IdMask" ng-model="product.IdMask" value="{{product.IdMask}}" ng-disabled="isEditing">
+                        <div ng-messages="productForm.IdMask.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="md-maxlength">The serial format must be less than 256 characters long.</div>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container flex class="md-block" ng-if="product.ModelType == 4">
+                        <md-tooltip md-direction="left">Id's for this are generated by the system</md-tooltip>
+                        <note msg="'You cannot change the serial format of a Quality Check (it will take the form of a Globally Unique Identifier or GUID)'"></note>
+                    </md-input-container>
+
+                    <md-input-container flex class="md-block" ng-if="product.ModelType == 1">
+                        <md-tooltip md-direction="left">For example: "EBX[0-9]{5}" means that "EBX" <br />followed by any 5 digits is valid. <br />"[a-zA-Z]{7}123 means any 7 letters <br />(uppercase and lowercase) followed by "123""</md-tooltip>
+                        <label>Public serial format</label>
+                        <input md-maxlength="256" name="PublicIdMask" ng-model="product.PublicIdMask" value="{{product.PublicIdMask}}" ng-disabled="isEditing">
+                        <div ng-messages="productForm.PublicIdMask.$error">
+                            <div ng-message="md-maxlength">The public serial format must be less than 256 characters long.</div>
+                        </div>
+                    </md-input-container>
+                </div>
+                
+                <md-subheader class="md-warn" ng-if="product.ModelType == 1">Model configurations</md-subheader>
+                <div layout="column" ng-if="product.ModelType == 1" layout-xs="column" class="md-padding" flex-gt-sx>
+                    <div layout="row" layout-align="center center">
+                        <md-input-container class="md-block" flex>
+                            <label>Configuration name</label>
+                            <input md-maxlength="250" name="ConfigurationName" ng-model="addEditModelConfiguration.Name" ng-disabled="isEditing">
+                            <div ng-messages="productForm.ConfigurationName.$error">
+                                <div ng-message="md-maxlength">The name must be less than 250 characters long.</div>
+                            </div>
+                        </md-input-container>
+                        <md-button class="" ng-click="cancelAddEditProductModelConfiguration()" ng-disabled="productForm.$pristine || productForm.$invalid || isSaving">
+                            <span>cancel</span>
+                        </md-button>
+                        <md-button class="md-raised md-accent" ng-click="addProductModelConfiguration(addEditModelConfiguration.Name)" ng-disabled="productForm.$pristine || productForm.$invalid || isSaving">
+                            {{configButtonText}}
+                            <md-progress-linear md-mode="indeterminate" ng-if="isSaving"></md-progress-linear>
+                        </md-button>
+                    </div>
+                    <div layout="row">
+                        <div ng-repeat="config in product.ProductModelConfigurations | orderBy: 'ConfigIndex'" ng-mouseenter="mouseOverIndex = config.ConfigIndex" ng-mouseleave="mouseOverIndex = -1">
+                            <div class="configContainer md-whiteframe-3dp" style="background-color: {{getColor(config.ConfigIndex)}}; color: white;" layout="row" layout-align="center center">
+                                <md-button class="md-icon-button" aria-label="More" ng-disabled="config.Name == 'default'" ng-click="removeConfig(config)">
+                                    <md-icon md-font-set="fa fa-times"></md-icon>
+                                </md-button>
+                                <span>{{config.Name}}</span>
+                                <div flex="25">
+                                    <md-button class="md-icon-button" ng-show="mouseOverIndex == config.ConfigIndex && config.Name != false" aria-label="More" ng-disabled="config.Name == 'default'" ng-click="editConfigName(config)">
+                                        <md-icon md-font-set="fa fa-wrench"></md-icon>
+                                    </md-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <md-subheader class="md-warn">Part numbers</md-subheader>
+                <div layout="row" layout-xs="column" class="md-padding" flex-gt-sx>
+                    <md-input-container flex class="md-block">
+                        <label>Part numbers</label>
+                        <md-chips ng-model="product.PartNumbers" md-transform-chip="addPartNumber($chip)">
+                            <md-chip-template>
+                                <span>
+                                    <strong>{{$chip.Number}}</strong>
+                                </span>
+                            </md-chip-template>
+                        </md-chips>
+                    </md-input-container>
+                </div>
+                @*<div layout="row" layout-xs="column" class="md-padding" flex-gt-sx>
+                        <md-input-container class="md-block">
+                            <md-tooltip md-direction="right">
+                                Enabling auto creation means that when you reference this part in an assembly and scan a serial that isn't used yet, <br />an instance of this part will be created. If an existing serial
+                                is used, the same restrictions are applied (serial can only be used once.)
+                            </md-tooltip>
+                            <label>Auto creation</label>
+                            <br /><md-switch ng-model="product.AutoCreate" ng-disabled="isSaving" aria-label="Enable auto creation?">
+                                Auto create part<span hide-xs> on new serial scan?</span>
+                            </md-switch>
+                        </md-input-container>
+                    </div>*@
+                <div hide-gt-xs><br /></div>
+                <md-dialog-actions layout="row">
+                    <span flex></span>
+                    @*<span>Dataloaded: {{dataLoaded}}</span>
+                        <span> - </span>
+                        <span>isSaving: {{isSaving}}</span>*@
+                    <md-button ng-click="reset()">
+                        Cancel
+                    </md-button>
+                    <md-button type="submit" ng-click="saveProduct();" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="productForm.$pristine || productForm.$invalid || isSaving">
+                        <span>save model</span>
+                        <md-progress-linear md-mode="indeterminate" ng-if="isSaving"></md-progress-linear>
+                    </md-button>
+                </md-dialog-actions>
+            </ng-form>
+        </section>
+    </md-content>
+
+    <hr />
+
+    <!-- COMPONENT LIST -->
+    <md-tabs md-dynamic-height="">
+        <md-tab label="Components">
+            <md-list>
+                <md-card>
+                    <md-card-content layout="column">
+                        <md-input-container>
+                            <label>Filter</label>
+                            <input type="text" ng-model="filterString">
+                        </md-input-container>
+                    </md-card-content>
+                </md-card>
+                <div layout="row" class="componentReorderActions" hide-xs>
+                    <span flex></span>
+                    <md-button ng-click="resetOrder()" ng-disabled="!doReorder">
+                        Cancel
+                    </md-button>
+                    <md-button type="submit" ng-click="reorderComponents()" ng-disabled="!doReorder || isSaving" style="margin-right:20px;" class="md-raised md-primary">
+                        Reorder components
+                        <div>
+                            <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                        </div>
+                    </md-button>
+                </div>
+
+                <md-item ng-repeat="productComponent in product.ProductComponents | filter : filterString">
+
+                    <input type="hidden" id="modelIdField" value="{{productComponent.modelId}}" />
+                    <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row" drag-to-reorder="components">
+                        <md-card-actions layout="row" layout-align="center center" layout-xs="column" layout-align-xs="start center" flex="5">
+                            <ng-md-icon icon="open_with" aria-label="drag to reorder" Size="48" class="dragIcon" hide-xs>
+                                <md-tooltip md-direction="bottom">Drag to reorder</md-tooltip>
+                            </ng-md-icon>
+
+                            <a ng-click="editProductComponent(productComponent, true, 0)" style="cursor: pointer;">
+                                <ng-md-icon icon="mode_edit" class="md-hue-2" Size="24" aria-label="Edit product component"></ng-md-icon>
+                                <md-tooltip md-direction="top">Edit product component</md-tooltip>
+                            </a>
+
+                            <input type="hidden" class="componentIdField" value="{{productComponent.Id}}" />
+                        </md-card-actions>
+                        <md-card-content hide-gt-xs layout="column" flex>
+                            <div class="md-subhead">{{productComponent.SequenceOrder}} - {{productComponent.ComponentName}}</div>
+                            <div class="md-caption">{{productComponent.ProductModelState.Name}}</div>
+                            <div class="md-caption">{{requirement[productComponent.ComponentRequirement]}}</div>
+                        </md-card-content>
+                        <md-card-content hide-xs layout="row" layout-align="start center" flex>
+                            <div layout="column" flex="50">
+                                <span class="md-headline" style="cursor: move;">{{productComponent.SequenceOrder}} - {{productComponent.ComponentName}}</span>
+                                <span class="md-subhead">{{productComponent.ProductModelState.Name}}</span>
+                            </div>
+                            <div layout="column" flex="50">
+                                <div class="md-subhead" layout="row" layout-align="start center">
+                                    <div>Applies to configurations:&nbsp;</div>
+                                    <div ng-repeat="config in productComponent.ProductModelConfigurations" layout-padding>
+                                        <div class="tinyConfigContainer" style="background-color: {{getColor(config.ConfigIndex)}}; color: white;">
+                                            <md-tooltip>{{config.Name}}</md-tooltip>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="md-subhead">Requirement: {{requirement[productComponent.ComponentRequirement]}}</span>
+                            </div>
+                        </md-card-content>
+                        <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                            <md-menu md-position-mode="target-right target">
+                                <a ng-click="$mdMenu.open($event)" style="cursor: pointer;">
+                                    <ng-md-icon icon="more_vert" aria-label="More..."></ng-md-icon>
+                                    <md-tooltip md-direction="top">Show more actions...</md-tooltip>
+                                </a>
+                                <md-menu-content>
+                                    <md-menu-item>
+                                        <md-button class="md-secondary" ng-href="/Products/ComponentWorkInstructions/{{productComponent.Id}}">
+                                            <div layout="row" layout-align="start center">
+                                                <div>
+                                                    <md-icon md-font-set="fa fa-fw fa-graduation-cap" class="md-toggle-icon"></md-icon>
+                                                </div>
+                                                <div>&nbsp;Work instructions</div>
+                                            </div>
+                                        </md-button>
+                                    </md-menu-item>
+                                    <md-menu-item>
+                                        <md-button class="md-secondary" ng-click="deleteProductComponent($event, productComponent)">
+                                            <div layout="row" layout-align="start center">
+                                                <div>
+                                                    <md-icon md-font-set="fa fa-fw fa-archive" class="md-toggle-icon"></md-icon>
+                                                </div>
+                                                <div>&nbsp;Archive component</div>
+                                            </div>
+                                        </md-button>
+                                    </md-menu-item>
+                                </md-menu-content>
+                            </md-menu>
+                        </md-card-actions>
+                    </md-card>
+                </md-item>
+            </md-list>
+        </md-tab>
+        <!-- Tooling tab -->
+        <md-tab label="Tooling">
+            <div layout="column">
+                <div layout="row" data-ng-init="initMasterToolList()" class="md-padding">
+                    <md-input-container class="md-block" flex>
+                        <md-select placeholder="Select tool" required ng-model="toolingSelector" name="MasterToolList" style="min-width: 200px;">
+                            <md-option ng-value="{{tool}}" ng-repeat="tool in toolingList">{{tool.Name}} - {{tool.ToolCode}}</md-option>
+                        </md-select>
+                        <div ng-messages="componentForm.ProductModelState.$error">
+                            <div ng-message="required">This is required.</div>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container class="md-block" flex="10">
+                        <md-button type="button" ng-click="addToolFromMasterListToModelList()" style="margin-right:20px;" class="md-raised md-primary">
+                            Add tool
+                        </md-button>
+                    </md-input-container>
+                </div>
+                <div layout="column">
+                    <md-button type="button" ng-click="saveModelToolList()" style="margin-right:20px;" class="md-raised md-primary" ng-if="tooling.length > 4" ng-disabled="isSaving">
+                        Save tool list
+                        <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                    </md-button>
+                    <md-chips ng-if="tooling.length > 4">
+                        <md-chip>Don't forget to click 'save tool list' after adding a tool to this model.</md-chip>
+                    </md-chips>
+                    <md-item ng-repeat="tool in tooling">
+                        <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row">
+                            <md-card-title layout="row" layout-align="center center" flex="90">
+                                <md-card-title-text>
+                                    <span class="md-headline">{{tool.Name}}</span>
+                                    <span class="md-subhead">{{tool.ToolCode}}</span>
+                                </md-card-title-text>
+                                <md-card-title-text>
+                                    <span class="md-subhead">{{tool.Setting}}</span>
+                                    <span class="md-subhead">{{tool.Description}}</span>
+                                </md-card-title-text>
+                            </md-card-title>
+                            <md-card-actions>
+                                <a ng-click="removeToolFromModelToolList(tool)" style="cursor: pointer;">
+                                    <ng-md-icon icon="close" aria-label="click to remove from list" Size="48"></ng-md-icon>
+                                </a>
+                            </md-card-actions>
+                        </md-card>
+                    </md-item>
+
+                    <md-button ng-click="saveModelToolList()" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="isSaving">
+                        Save tool list
+                        <div>
+                            <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                        </div>
+                    </md-button>
+                    <note msg="'Don&rsquo;t forget to click &rsquo;save tool list&rsquo; after adding a tool to this model.'"></note>
+                    <br /><br /><br /><br />
+                </div>
+            </div>
+        </md-tab>
+    </md-tabs>
+
+    <md-content>
+
+        <script type="text/ng-template" id="change-list.html">
+            <md-dialog aria-label="Product changes since last release." flex="90" ng-cloak>
+                <md-toolbar>
+                    <div class="md-toolbar-tools">
+                        <h2>Changes since last release</h2>
+                        <span flex></span>
+                        <md-button ng-click="answer('cancel')" class="md-icon-button">
+                            <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <md-dialog-content style="padding-left: 10px;padding-right: 10px; padding-top: 5px; padding-bottom: 5px;">
+                    <div flex ng-repeat="change in changeList" layout="row">
+                        <div flex="70">&bull;&nbsp;{{change.ChangeDescription}}</div>
+                        <div flex="20">{{change.ChangeMadeBy}}</div>
+                        <div flex="10">{{change.ChangeDate.replace("T", " ").replace("Z", "")}}</div>
+                    </div>
+                    <div flex ng-hide="changeList != null && changeList.length > 0" class="md-padding">
+                        No changes yet.
+                    </div>
+                </md-dialog-content>
+            </md-dialog>
+        </script>
+
+        <script type="text/ng-template" id="component-template.html">
+            <md-dialog aria-label="Product model components" flex="30" flex-xs="90" ng-cloak data-ng-init="initModelStates()">
+
+                <md-toolbar>
+                    <div class="md-toolbar-tools">
+                        <h2>Product component</h2>
+                        <span flex></span>
+                        <md-button ng-click="answer('cancel')" class="md-icon-button">
+                            <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <md-content>
+                    <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                        <div flex>
+                            <ul>
+                                <md-item ng-repeat="error in dialogActionResult">
+                                    <li>{{error}}</li>
+                                </md-item>
+                            </ul>
+                        </div>
+
+                        <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                            <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                        </md-button>
+                    </div>
+                    <div flex>
+                        <form name="componentForm" id="componentForm">
+                            <input type="hidden" name="ProductModel" ng-model="product.Id" />
+                            <div layout="row" layout-xs="column" class="md-padding">
+                                <md-input-container class="md-block" flex-gt-xs="50">
+                                    <label>Name</label>
+                                    <input md-maxlength="90" required="" name="ComponentName" ng-model="productComponent.ComponentName">
+                                    <div ng-messages="componentForm.ComponentName.$error">
+                                        <div ng-message="required">This is required.</div>
+                                        <div ng-message="md-maxlength">The name must be less than 90 characters long.</div>
+                                    </div>
+                                </md-input-container>
+                                <md-autocomplete name="UnderlyingProductModel" md-floating-label="Reference"
+                                                 flex-gt-xs="50"
+                                                 md-item-text="item.Name"
+                                                 md-items="item in querySearchReferencePromise(product.Id, searchText)"
+                                                 md-search-text="searchText"
+                                                 md-selected-item="productComponent.UnderlyingProductModel"
+                                                 md-min-length="3"
+                                                 md-input-name="autocompleteField">
+                                    <md-item-template>
+                                        <span md-highlight-text="searchText">{{item.Name}}</span>
+                                    </md-item-template>
+                                    <div ng-messages="componentForm.UnderlyingProductModel.$error" ng-if="componentForm.UnderlyingProductModel.$touched">
+                                    </div>
+                                </md-autocomplete>
+                            </div>
+
+                            <div layout="row" layout-xs="column" class="md-padding">
+                                <md-input-container class="md-block" flex-gt-xs="50">
+                                    <label>State</label>
+                                    <md-select placeholder="Select state" required ng-model="productComponent.ProductModelState" ng-model-options="{trackBy: '$value.Id'}" name="ProductModelState" style="min-width: 200px;">
+                                        <md-option ng-value="{{state}}" ng-repeat="state in modelStates">{{state.Name}}</md-option>
+                                    </md-select>
+                                    <div ng-messages="componentForm.ProductModelState.$error">
+                                        <div ng-message="required">This is required.</div>
+                                    </div>
+                                </md-input-container>
+
+                                <md-input-container flex-gt-xs="50">
+                                    <label>Requirements</label>
+                                    <md-select ng-model="productComponent.ComponentRequirement" placeholder="requirement" name="ComponentRequirement">
+                                        <md-option value="0">None</md-option>
+                                        <md-option value="1">Revision</md-option>
+                                        <md-option value="2">Serial</md-option>
+                                        <md-option value="4">Both</md-option>
+                                    </md-select>
+                                    <div ng-messages="componentForm.ComponentRequirement.$error">
+                                    </div>
+                                </md-input-container>
+                            </div>
+
+                            <div layout="row" layout-xs="column" class="md-padding">
+                                <md-input-container ng-show="productComponent.ComponentRequirement == '1' || productComponent.ComponentRequirement == '4'" flex-gt-xs="50">
+                                    <md-tooltip md-direction="left">For example: "EBX[0-9]{5}" means that "EBX" <br />followed by any 5 digits is valid. <br />"[a-zA-Z]{7}123 means any 7 letters <br />(uppercase and lowercase) followed by "123""</md-tooltip>
+                                    <label>Revision mask</label>
+                                    <input md-maxlength="128" ng-required="productComponent.ComponentRequirement == '1' || productComponent.ComponentRequirement == '4'" name="RevisionInputMask" ng-model="productComponent.RevisionInputMask"><span class="md-caption">For example: EBX[0-9]{5} = "EBX" followed by 5 digits</span>
+                                    <div ng-messages="componentForm.RevisionInputMask.$error">
+                                    </div>
+                                </md-input-container>
+
+                                <md-input-container ng-show="productComponent.ComponentRequirement == '2' || productComponent.ComponentRequirement == '4'" flex-gt-xs="50">
+                                    <md-tooltip md-direction="left">For example: "EBX[0-9]{5}" means that "EBX" <br />followed by any 5 digits is valid. <br />"[a-zA-Z]{7}123 means any 7 letters <br />(uppercase and lowercase) followed by "123""</md-tooltip>
+                                    <label>Serial mask</label>
+                                    <input md-maxlength="128" ng-required="productComponent.ComponentRequirement == '2' || productComponent.ComponentRequirement == '4'" name="SerialInputMask" ng-model="productComponent.SerialInputMask" ng-disabled="productComponent.UnderlyingProductModel != null">
+                                    <div ng-messages="componentForm.SerialInputMask.$error">
+                                        <div ng-message="required">This is required.</div>
+                                        <div ng-message="md-maxlength">The serial input mask must be less than 128 characters long.</div>
+                                    </div>
+                                </md-input-container>
+                            </div>
+
+                            <div layout="row" layout-xs="column" class="md-padding">
+                                <md-input-container ng-show="productComponent.ProductModelState.Name == 'Automation'" flex-gt-xs="50">
+                                    <label>Device keyword</label>
+                                    <input md-maxlength="30" ng-required="productComponent.ProductModelState.Name == 'Automation'" name="DeviceKeyword" ng-model="productComponent.DeviceKeyword"><span class="md-caption">Do not use spaces</span>
+                                    <div ng-messages="componentForm.DeviceKeyword.$error">
+                                    </div>
+                                </md-input-container>
+                            </div>
+
+                            <md-subheader class="md-warn">Model configurations</md-subheader>
+
+                            <div layout="column" layout-align="center center" layout-padding>
+                                <div ng-repeat="config in product.ProductModelConfigurations | orderBy: 'ConfigIndex'" class="configContainer md-whiteframe-3dp @Constants.Strings.AnimationClasses" style="background-color: {{config.Color}}; color: white; width: 300px; margin-bottom: 5px; padding: 5px;"  layout="row" layout-align="start center">
+                                    <md-button class="md-icon-button" ng-if="!isInConfig(productComponent.ProductModelConfigurations, config)" ng-click="addRemoveFromComponentConfigs(productComponent, config, true)">
+                                        <md-icon md-font-set="fa fa-square"></md-icon>
+                                    </md-button>
+                                    <md-button class="md-icon-button" ng-if="isInConfig(productComponent.ProductModelConfigurations, config)" ng-click="addRemoveFromComponentConfigs(productComponent, config, false)">
+                                        <md-icon md-font-set="fa fa-check-square"></md-icon>
+                                    </md-button>
+                                    <div>&nbsp;{{config.Name}}</div>
+                                </div>
+                            </div>
+
+                            <md-dialog-actions layout="row">
+                                <span flex></span>
+                                <md-button ng-click="answer('cancel')">
+                                    Cancel
+                                </md-button>
+                                <md-button ng-click="isSaving = true; saveProductComponent(productComponent);" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="componentForm.$invalid || isSaving">
+                                    <span>SAVE</span>
+                                    <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                                </md-button>
+                            </md-dialog-actions>
+                        </form>
+                    </div>
+                </md-content>
+            </md-dialog>
+        </script>
+    </md-content>
+
+    <md-button class="md-fab md-fab-bottom-right docs-scroll-fab md-button md-ink-ripple scrolling" aria-label="New component" style="position:fixed !important;" ng-disabled="componentForm.$invalid || isSaving" ng-click="editProductComponent(null, true, 0)">
+        <md-tooltip md-direction="top">New product component</md-tooltip>
+        <ng-md-icon icon="add"></ng-md-icon>
+    </md-button>
+</div>
+
+@*<script src="~/Scripts/Views/ProductScripts.js?@DateTime.Now.Ticks.ToString()"></script>*@
+<script src="~/Scripts/Views/ProductScripts.js"></script>

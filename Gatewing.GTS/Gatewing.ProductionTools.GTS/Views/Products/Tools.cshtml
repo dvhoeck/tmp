@@ -1,0 +1,254 @@
+﻿@{
+    ViewBag.Title = "Master tool list";
+}
+
+<script src="~/Scripts/expansionPanel.service.js"></script>
+
+<div ng-controller="ProductsCtrl" ng-app="GTS" data-ng-init="initMasterToolList()">
+    <md-card>
+        <md-card-content layout="column">
+            <md-input-container>
+                <label>Filter</label>
+                <input type="text" ng-model="search" id="filterField" focus-me="true">
+            </md-input-container>
+        </md-card-content>
+    </md-card>
+    <div dvh-pagination data="toolingList"></div>
+    <loading></loading>
+    <div ng-repeat="tool in filtered | startFrom:(currentPage-1)*entryLimit | limitTo:entryLimit track by tool.Id" layout="column" class="@Constants.Strings.AnimationClasses">
+        <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch="" layout="row">
+            <md-card-actions layout="row" layout-xs="column" layout-align="center center" layout-align-xs="start center" flex="5">
+                <a href="" ng-click="editTool(tool, metaData.releaseComment)">
+                    <ng-md-icon icon="mode_edit" aria-label="Edit tool"></ng-md-icon>
+                    <md-tooltip md-direction="top">Edit tool</md-tooltip>
+                </a>
+                <input type="hidden" class="toolIdField" value="{{tool.Id}}" />
+            </md-card-actions>
+            <md-card-title layout="row" hide-xs layout-align="center center" flex>
+                <md-card-title-text>
+                    <div class="md-headline">{{tool.Name}}</div>
+                    <div class="md-subhead">{{tool.ToolCode}}</div>
+                </md-card-title-text>
+                <md-card-title-text>
+                    <div class="md-subhead">{{tool.Setting}}</div>
+                    <div class="md-subhead">{{tool.Description}}</div>
+                </md-card-title-text>
+            </md-card-title>
+            <md-card-title layout="row" hide-gt-xs flex>
+                <div layout="column">
+                    <div class="md-subhead">{{tool.Name}}</div>
+                    <div class="md-caption">{{tool.ToolCode}}</div>
+                    <div class="md-caption">{{tool.Setting}}</div>
+                    <div class="md-caption">{{tool.Description}}</div>
+                </div>
+            </md-card-title>
+            <md-card-actions layout="row" layout-align="center center" layout-align-xs="center start" flex="5">
+                <md-menu md-position-mode="target-right target">
+                    <a ng-click="$mdMenu.open($event)" style="cursor: pointer;">
+                        <ng-md-icon icon="more_vert" aria-label="More..."></ng-md-icon>
+                        <md-tooltip md-direction="top">Show more actions...</md-tooltip>
+                    </a>
+                    <md-menu-content>
+                        <md-menu-item>
+                            <md-button class="md-secondary" ng-click="showArchivalModal(tool);">
+                                <div layout="row" layout-align="start center">
+                                    <div>
+                                        <md-icon md-font-set="fa fa-fw fa-archive" class="md-toggle-icon"></md-icon>
+                                    </div>
+                                    <div>&nbsp;Archive tool</div>
+                                </div>
+                            </md-button>
+                        </md-menu-item>
+                    </md-menu-content>
+                </md-menu>
+            </md-card-actions>
+        </md-card>
+    </div>
+    <div dvh-pagination data="toolingList"></div>
+
+    <script type="text/ng-template" id="toolArchival-template.html">
+        <md-dialog aria-label="Tool archival" flex-gt-xs="30" flex-xs="90" ng-cloak>
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Assembly tool archival</h2>
+                    <span flex></span>
+                    <md-button ng-click="answer('cancel')" class="md-icon-button">
+                        <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+            <md-content>
+                <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                    <div flex>
+                        <ul>
+                            <md-item ng-repeat="error in dialogActionResult">
+                                <li>{{error}}</li>
+                            </md-item>
+                        </ul>
+                    </div>
+
+                    <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                        <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                    </md-button>
+                </div>
+                <div layout="column" class="md-padding">
+                    <md-subheader class="md-warn">Tool details</md-subheader>
+                    <div layout="row" layout-xs="column" class="md-padding">
+                        <div flex-gt-xs>
+                            <div class="md-title">Name</div>
+                            <div class="md-subhead">{{addEditTool.Name}}</div>
+                            <div hide-gt-xs><br /></div>
+                        </div>
+
+                        <div flex-gt-xs>
+                            <div class="md-title">Tool code</div>
+                            <div class="md-subhead">{{addEditTool.ToolCode}}</div>
+                            <div hide-gt-xs><br /></div>
+                        </div>
+
+                        <div flex ng-if="addEditTool.Setting">
+                            <div class="md-title">Setting</div>
+                            <div class="md-subhead">{{addEditTool.Setting}}</div>
+                            <div hide-gt-xs><br /></div>
+                        </div>
+                    </div>
+                    <div class="md-padding" ng-if="addEditTool.Description">
+                        <div class="md-title">Description</div>
+                        <div class="md-subhead">{{addEditTool.Description}}</div>
+                    </div>
+                    <md-subheader class="md-warn" ng-if="addEditTool.SimpleModelList && addEditTool.SimpleModelList.length > 0">Associated models</md-subheader>
+                    <div layout="column" class="md-padding" ng-if="addEditTool.SimpleModelList && addEditTool.SimpleModelList.length > 0">
+                        <div>
+                            <label>These models will be released when archiving this tool.</label>
+                            <ul>
+                                <li ng-repeat="simpleModel in addEditTool.SimpleModelList">
+                                    {{simpleModel.Name}} v{{simpleModel.Version}}
+                                </li>
+                            </ul>
+                        </div>
+                        <md-input-container class="md-block" flex>
+                            <label>Release comment</label>
+                            <input md-maxlength="250" required name="toolReleaseComment" ng-model="addEditTool.releaseComment">
+                            <div ng-messages="toolForm.ReleaseComment.$error">
+                            </div>
+                        </md-input-container>
+                    </div>
+                    <div hide-gt-xs><br /></div>
+                    <md-dialog-actions layout="row" class="md-padding">
+                        <span flex></span>
+                        <md-button ng-click="answer('cancel')">
+                            Cancel
+                        </md-button>
+                        <md-button ng-click="archiveTool(addEditTool);isSaving = true; answer('submit')" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="toolForm.$invalid || isSaving">
+                            Archive
+                            <div>
+                                <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                            </div>
+                        </md-button>
+                    </md-dialog-actions>
+                </div>
+            </md-content>
+        </md-dialog>
+    </script>
+
+    <script type="text/ng-template" id="tool-template.html">
+        <md-dialog aria-label="Product model tools" flex-gt-xs="30" flex-xs="90" ng-cloak data-ng-init="initModelStates()">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Assembly tool</h2>
+                    <span flex></span>
+                    <md-button ng-click="answer('cancel')" class="md-icon-button">
+                        <ng-md-icon icon="close" aria-label="Close dialog" md-colors="{fill: 'default-grey-100'}"></ng-md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+            <md-content>
+                <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                    <div flex>
+                        <ul>
+                            <md-item ng-repeat="error in dialogActionResult">
+                                <li>{{error}}</li>
+                            </md-item>
+                        </ul>
+                    </div>
+
+                    <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                        <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                    </md-button>
+                </div>
+                <form name="toolForm" id="toolForm" layout="column">
+                    <md-subheader class="md-warn">Tool details</md-subheader>
+                    <div layout="row" layout-xs="column" class="md-padding">
+                        <md-input-container class="md-block">
+                            <label>Name</label>
+                            <input md-maxlength="90" required name="ToolName" ng-model="addEditTool.Name"><input type="hidden" name="ToolId" ng-model="addEditTool.Id">
+                            <div ng-messages="toolForm.ToolName.$error">
+                            </div>
+                            <div hide-gt-xs><br /></div>
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Tool code</label>
+                            <input md-maxlength="90" required name="ToolCode" ng-model="addEditTool.ToolCode">
+                            <div ng-messages="toolForm.ToolCode.$error">
+                            </div>
+                        </md-input-container>
+
+                        <md-input-container>
+                            <label>Setting</label>
+                            <input md-maxlength="90" name="Setting" ng-model="addEditTool.Setting">
+                            <div ng-messages="toolForm.Setting.$error">
+                            </div>
+                        </md-input-container>
+                    </div>
+                    <div layout="row" class="md-padding">
+                        <md-input-container class="md-block" flex>
+                            <label>Description</label>
+                            <input md-maxlength="250" name="Description" ng-model="addEditTool.Description">
+                            <div ng-messages="toolForm.Description.$error">
+                            </div>
+                        </md-input-container>
+                    </div>                    <md-subheader class="md-warn" ng-if="addEditTool.SimpleModelList && addEditTool.SimpleModelList.length > 0">Associated models</md-subheader>
+                    <div layout="column" class="md-padding" ng-if="addEditTool.SimpleModelList && addEditTool.SimpleModelList.length > 0">
+                        <div>
+                            <label>These models will be released when changing this tool.</label>
+                            <ul>
+                                <li ng-repeat="simpleModel in addEditTool.SimpleModelList">
+                                    {{simpleModel.Name}} v{{simpleModel.Version}}
+                                </li>
+                            </ul>
+                        </div>
+                        <md-input-container class="md-block" flex>
+                            <label>Release comment</label>
+                            <input md-maxlength="250" required name="toolReleaseComment" ng-model="addEditTool.releaseComment">
+                            <div ng-messages="toolForm.ReleaseComment.$error">
+                            </div>
+                        </md-input-container>
+                    </div>
+                    <div hide-gt-xs><br /></div>
+                    <md-dialog-actions layout="row" class="md-padding">
+                        <span flex></span>
+                        <md-button ng-click="answer('cancel')">
+                            Cancel
+                        </md-button>
+                        <md-button ng-click="saveTool(addEditTool); isSaving = true; " style="margin-right:20px;" class="md-raised md-primary" ng-disabled="toolForm.$invalid || isSaving">
+                            Save
+                            <div>
+                                <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                            </div>
+                        </md-button>
+                    </md-dialog-actions>
+                </form>
+            </md-content>
+        </md-dialog>
+    </script>
+
+    <md-button aria-label="Add tool" class="md-fab md-fab-bottom-right docs-scroll-fab md-button md-ink-ripple scrolling" style="position:fixed !important;" ng-click="editTool(null);" ng-disabled="toolForm.$invalid || isSaving">
+        <md-tooltip md-direction="left" md-visible="tooltipVisible" md-autohide="false">
+            Add tool
+        </md-tooltip>
+        <ng-md-icon icon="add" aria-label="Add tool"></ng-md-icon>
+    </md-button>
+</div>
+
+<script src="~/Scripts/Views/ProductScripts.js?@DateTime.Now.Ticks.ToString()"></script>

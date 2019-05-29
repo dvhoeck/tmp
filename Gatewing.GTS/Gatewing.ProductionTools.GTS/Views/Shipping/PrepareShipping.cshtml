@@ -1,0 +1,455 @@
+﻿@{
+    ViewBag.Title = "Prepare shippings";
+}
+
+<div ng-controller="ShippingCtrl" ng-app="GTS" layout="column" data-ng-init="initShippings();overrideSideNavLock(false);" ng-cloak>
+
+    <style>
+        body {
+            color: #999;
+        }
+
+        .oddRow {
+            background-color: rgba(0, 0, 0, 0.025);
+            /*border-radius: 5px;*/
+        }
+
+        .evenRow {
+            background-color: rgba(0, 0, 0, 0.01);
+            /*border-radius: 5px;*/
+        }
+
+        hr.flat {
+            border: 0px;
+            border-top: 3px solid;
+        }
+
+        div.metaHeader {
+            height: 75px;
+            width: 200px;
+            background-color: #fff;
+            line-height: 75px;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+            div.metaHeader span {
+                font-weight: bold;
+            }
+
+            div.metaHeader div {
+                position: absolute;
+                line-height: normal;
+                right: 10px;
+                bottom: 5px;
+            }
+
+        div.addressHeader {
+            height: 100px;
+            width: auto;
+        }
+
+        div.bomNr {
+            margin-top: -50px;
+            margin-right: -10px;
+        }
+               
+        .errorRow {
+            background: repeating-linear-gradient( 135deg, rgba(255, 153, 51, 0.2), rgba(255, 153, 51, 0.2) 10px, rgba(255, 102, 51, 0.2) 10px, rgba(255, 102, 51, 0.2) 20px);
+        }
+
+        .pickedRow {
+            background-color: lightgreen;
+            color: white;
+            border-bottom: 1px solid white;
+        }
+
+        input[type='checkbox'] {
+            -moz-appearance: none;
+            -o-apperance: none;
+            -webkit-appearance: none;
+            background: none; /* ios */
+            border-radius: 4px;
+            border: 1px solid #999;
+            font-size: inherit;
+            height: 2em;
+            line-height: 1;
+            position: relative;
+            vertical-align: bottom;
+            width: 2em;
+        }
+
+            input[type='checkbox']:before,
+            input[type='checkbox']:after {
+                content: "";
+                position: absolute;
+                transition: transform .2s ease-in-out;
+            }
+
+            input[type='checkbox']:before,
+            input[type='checkbox']:after {
+                border-bottom: 3px solid white;
+                border-right: 3px solid white;
+                bottom: 0;
+                height: 1em;
+                margin: auto;
+                right: .5em;
+                top: -.5em;
+                transform: rotate(45deg) scale(0);
+                width: .625em;
+            }
+
+            input[type='checkbox']:checked {
+                border-color: white;
+                /* box-shadow: inset 0 0 20px 3px rgba(34, 139, 236, .05); */
+            }
+
+                input[type='checkbox']:checked:before {
+                    transform: rotate(45deg) scale(1);
+                }
+
+        .validationSummaryContainer {
+            border-radius: 10px;
+            border: 1px solid rgb(255, 102, 51);
+            background-color: white;
+            color: rgb(255, 102, 51);
+            overflow: hidden;
+            position: relative;
+            padding: 0px;
+        }
+
+            .validationSummaryContainer div.header {
+                color: white;
+                background-color: rgb(255, 102, 51);
+            }
+
+        button.refreshButton {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+        }
+
+        md-card {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .divColorTag {
+            height: 50px;
+            width: 10px;
+            /*border-radius: 5px;*/
+            float: left;
+            padding: 0px;
+            margin: 0px !important;
+        }
+
+        .boxSize {
+            border: 1px solid #999;
+            color: #999;
+            padding: 0px;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.8em;
+        }
+
+        .input-group-addon {
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1;
+            color: #555;
+            text-align: center;
+            background-color: #eee;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            height: 34px;
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+            -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+
+        .boxSelectionContainer {
+            border: 1px solid #ff9933;
+            background-color: white;
+            border-radius: 10px;
+            position: fixed;
+            top: 10px;
+            width: 430px;
+            z-index: 999;
+            right: -330px;
+        }
+
+            .boxSelectionContainer.displayBoxUi {
+                right: -30px;
+                transition: 0.2s;
+            }
+
+        md-input-container {
+            margin: 5px;
+        }
+    </style>
+
+    @if (User.IsInRole("Administrators"))
+    {
+
+        <md-content layout="row">
+            <md-card layout="row" flex layout-align="start center">
+                <div layout="row" layout-align="center center" layout-padding md-colors="{background: 'accent'}" style="height: 100%;">
+                    <md-input-container class="md-block">
+                        <label>Choose picking BOM</label>
+                        <md-select placeholder="Choose BOM" required ng-model="selectedBOM" name="BomSelection" style="min-width: 200px;" tabindex="-1">
+                            <md-option ng-value="preparation.BomNr" ng-repeat="preparation in shippingPreparation.BomList track by $index" layout="row"><div layout="row" layout-align="center center" flex style="width: 200px;"><div style="margin-top: 5px;">{{preparation.BomNr}}</div><div flex></div><shipping-activated active="preparation.IsActive"></shipping-activated></div></md-option>
+                        </md-select>
+                    </md-input-container>
+                    <md-button class="md-icon-button" aria-label="Start shipping prep" style="font-size: 1.5em;" ng-click="startStopShippingPreparation(true)" tabindex="-1">
+                        <md-icon md-font-set="fa fa-play"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button" aria-label="Stop shipping prep" style="font-size: 1.5em;" ng-click="startStopShippingPreparation(false)" tabindex="-1">
+                        <md-icon md-font-set="fa fa-stop"></md-icon>
+                    </md-button>
+                    <md-button class="md-icon-button md-warn" aria-label="Stop all shipping preps" style="font-size: 1.5em;" ng-click="stopAllPreparations();" tabindex="-1">
+                        <md-icon md-font-set="fa fa-clone"></md-icon>
+                    </md-button>
+                </div>
+                <div layout="row" layout-align="center center" layout-padding>
+                    <div flex></div>
+                    <div layout="column" layout-align="center start">
+                        <div>
+                            <span>Available BOM's: </span><span md-colors="{color: 'accent'}">{{shippingPreparation.BomList.length}}</span>
+                        </div>
+                        <div>
+                            <span>Selected BOM: </span><span md-colors="{color: 'accent'}">{{selectedBOM}}</span>
+                        </div>
+                        <div layout="row">
+                            <span>Active BOM's:&nbsp;</span><br /><div md-colors="{color: 'warn'}" ng-repeat="bom in filterOutInActive(shippingPreparation.BomList)">{{$index > 0 ? ",&nbsp;" : ""}}{{bom.BomNr}}<span ng-init="lastBom = bom"></span></div>
+                        </div>
+                    </div>
+                    <div flex></div>
+                </div>
+                <md-button class="md-icon-button md-warn refreshButton"  tabindex="-1">
+                    <md-icon md-font-set="fa fa-sync-alt"></md-icon>
+                    <md-tooltip>Refresh data</md-tooltip>
+                </md-button>
+            </md-card>
+        </md-content>
+    }
+
+    <div style="position: fixed; bottom: 0px; width: 100%; right: 20px; z-index: 999; transform: rotate(0deg);" layout="column" layout-align="end end" ng-if="selectedTabIndex===0" class="@Constants.Strings.AnimationClasses">
+        <div layout="row" layout-align="center center" md-colors="{background: 'accent', color: 'grey-200'}" layout-padding>
+            Progress: {{ (((shippingPreparation.Picking | filter:{IsPicked: true }).length /  shippingPreparation.TotalToPick) * 100).toFixed(0)}}%
+        </div>
+        <md-progress-linear md-mode="determinate" value="{{ ((shippingPreparation.Picking | filter:{IsPicked: true }).length /  shippingPreparation.TotalToPick) * 100}}" class="md-warn"></md-progress-linear>
+    </div>
+
+    <h4>{{boxSelectionLeftAnchor}}</h4>
+
+    <loading></loading>
+
+    <md-content ng-if="shippingPreparation && shippingPreparation.Packing && shippingPreparation.Packing.length > 0">
+
+        <div class="boxSelectionContainer" ng-class="{displayBoxUi:displayBoxUi}" ng-mouseenter="displayBoxUi = true" ng-mouseleave="displayBoxUi = false">
+            <div layout="row" layout-align="center center" layout-padding>
+                <div>
+                    <md-icon md-font-set="fa fa-fw fa-box fa-4x" md-colors="{color: 'accent'}"></md-icon>
+                </div>
+                <div flex>
+                    Select or enter box
+                    <hr />
+                </div>
+            </div>
+        </div>
+
+        <md-tabs class="md-secondary" md-stretch-tabs="always" md-dynamic-height md-selected="1">
+            <md-tab ng-cloak md-on-select="onTabChanges(0)"  tabindex="-1">
+                <md-tab-label layout="row" layout-align="center center">
+                    <span class="fa-stack xs" style="font-size: 0.7em;">
+                        <i class="fa fa-hand-holding fa-stack-2x" data-fa-transform="down-2"></i>
+                        <i class="fa fa-box fa-stack-1x" data-fa-transform="up-1"></i>
+                    </span>
+                    <span>PICKING</span>
+                </md-tab-label>
+                <md-tab-body>
+                    <div layout-padding>
+                        <div class="validationSummaryContainer" layout="column" ng-if="shippingPreparation.ValidationMessages && shippingPreparation.ValidationMessages.length > 0" ng-cloak>
+                            <div layout="row" layout-align="center center" class="header" layout-padding>
+                                <div class="md-display-1" flex>PICKING ISSUES</div>
+                                <md-icon md-font-set="fa fa-exclamation-triangle fa-4x"></md-icon>
+                            </div>
+                            <div layout="row" layout-align="start start" layout-padding ng-repeat="validationMessage in shippingPreparation.ValidationMessages">
+                                <div>
+                                    <md-icon md-font-set="fa fa-check-square"></md-icon>
+                                </div>
+                                <div>{{validationMessage.PartNr}}</div>
+                                <div flex>{{validationMessage.Message}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-repeat="shipping in shippingPreparation.Picking | orderBy: 'StockLocation'" layout="row" ng-click="shipping.IsPicked = !shipping.IsPicked" layout-align="center center" layout-padding ng-class-odd="'oddRow'" ng-class-even="'evenRow'" ng-if="shipping.StockLocation && shipping.StockLocation != ''" ng-class="{pickedRow: shipping.IsPicked, errorRow: shipping.Quantity > shipping.StockLevel}" @*ng-class="test == true ? 'picked' : shipping.Quantity <= shipping.StockLevel ? '': 'errorRow'  "*@>
+                        <div layout="row" layout-align="start center">
+                            <md-icon md-font-set="fa fa-fw fa-boxes xs" ng-if="shipping.UoM == 'PCE'"></md-icon>
+                            <md-icon md-font-set="fa fa-fw fa-ruler xs" ng-if="shipping.UoM != 'PCE'"></md-icon>
+                            <md-tooltip ng-if="shipping.StockLevel < shipping.Quantity">Stock count is too low!</md-tooltip>
+                        </div>
+                        <div flex="10" layout="row" layout-align="start center">
+                            <div ng-if="shipping.StockLevel != -999" layout="row" layout-align="center center">
+                                <div md-colors="{color: 'warn'}" ng-class="'md-title'" ng-if="shipping.StockLevel < shipping.Quantity">{{shipping.Quantity.toString().indexOf(".") > -1 ? shipping.Quantity.toFixed(2): shipping.Quantity}}</div>
+                                <div md-colors="{color: 'accent'}" ng-class="'md-title'" ng-if="shipping.StockLevel === shipping.Quantity">{{shipping.Quantity.toString().indexOf(".") > -1 ? shipping.Quantity.toFixed(2): shipping.Quantity}}</div>
+                                <div md-colors="{color: 'green'}" ng-class="'md-title'" ng-if="shipping.StockLevel > shipping.Quantity">{{shipping.Quantity.toString().indexOf(".") > -1 ? shipping.Quantity.toFixed(2): shipping.Quantity}}</div>
+                                <div>/{{shipping.StockLevel}}&nbsp;</div>
+                            </div>
+                            <md-icon md-font-set="fa fa-fw fa-exclamation-triangle fa-2x" md-colors="{color: 'warn'}" ng-if="shipping.StockLevel < shipping.Quantity"></md-icon>
+                        </div>
+                        <div flex="20">
+                            <icon-shipping-stock ng-if="shipping.StockLocation.substr(0, 1) === 'Z' || shipping.StockLocation.substr(0, 1) === 'A' || shipping.StockLocation.substr(0, 1) === 'B' || shipping.StockLocation.substr(0, 1) === 'C' || (shipping.StockLocation.substr(0, 1) === 'D' && shipping.StockLocation.substr(0, 3) != 'DOC') || shipping.StockLocation.substr(0, 1) === 'E'"></icon-shipping-stock>
+                            <icon-shipping-pallet ng-if="getLocationStartLetter(shipping.StockLocation) === 'P'"></icon-shipping-pallet>
+                            <icon-shipping-floor ng-if="getLocationStartLetter(shipping.StockLocation) === 'F'"></icon-shipping-floor>
+                            <icon-shipping-shipping ng-if="getLocationStartLetter(shipping.StockLocation) === 'S'"></icon-shipping-shipping>
+                            <icon-shipping-document ng-if="(shipping.StockLocation && shipping.StockLocation.substr(0,3) === 'DOC') || (!shipping.StockLocation && shipping.PartNr.substr(0,3) === 'DOC')"></icon-shipping-document>
+                            {{shipping.StockLocation}}
+                        </div>
+                        <div flex="20">
+                            {{shipping.PartNr}}
+                        </div>
+                        <div flex></div>
+                        <div md-truncate>
+                            {{shipping.PartName}}
+                            <md-tooltip>{{shipping.PartName}}</md-tooltip>
+                        </div>
+                        <div md-truncate>
+                            <input type="checkbox" readonly ng-model="shipping.IsPicked" />
+                        </div>
+                    </div>
+
+                    <div layout-padding>
+                        <hr class="flat" md-colors="{borderColor: 'warn'}" />
+                    </div>
+
+                    <div layout="row" layout-align="center center" style="margin-top: -30px; margin-left: 10px;">
+                        <md-icon md-font-set="fa fa-fw fa-box xs" data-fa-transform="shrink-4" md-colors="{color: 'warn'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Stock</span>
+                        <md-icon md-font-set="fa fa-fw fa-pallet xs" md-colors="{color: 'accent-800'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Pallet</span>
+                        <md-icon md-font-set="fa fa-fw fa-warehouse xs" md-colors="{color: 'accent-600'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Floor</span>
+                        <md-icon md-font-set="fa fa-fw fa-shipping-fast xs" md-colors="{color: 'accent-400'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Shipping area</span>
+                        <md-icon md-font-set="fa fa-fw fa-file-invoice xs" md-colors="{color: 'accent-200'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Document</span><div flex></div>
+                    </div>
+                </md-tab-body>
+            </md-tab>
+            <md-tab ng-cloak md-on-select="onTabChanges(1)" tabindex="-1">
+                <md-tab-label layout="row" layout-align="center center">
+                    <md-icon md-font-set="fa fa-fw fa-dolly-flatbed xs"></md-icon>
+                    <span>PACKAGING</span>
+                </md-tab-label>
+                <md-tab-body>
+
+                    <div ng-repeat="packingGroup in shippingPreparation.Packing" layout-padding>
+                        <div layout="row" layout-padding>
+                            <div class="metaHeader" layout-align="center center" style="border-left: 5px solid;" md-colors="{'border-color': 'accent-900'}">
+                                <span md-colors="{color: 'accent' }">{{packingGroup[0].ExpectedDeliveryDate.substr(0,10)}}</span>
+                                <div class="md-caption">DATE</div>
+                            </div>
+                            <div flex></div>
+                            <div class="metaHeader" layout-align="center center" style="border-left: 5px solid;" md-truncate md-colors="{'border-color': 'accent-600'}">
+                                <span md-colors="{color: 'accent' }">{{packingGroup[0].ClientName}}</span>
+                                <div class="md-caption">CLIENT</div>
+                                <md-tooltip>{{packingGroup[0].ClientName}}</md-tooltip>
+                            </div>
+                            <div flex></div>
+                            <div class="metaHeader" layout-align="center center" style="border-left: 5px solid;" md-truncate md-colors="{'border-color': 'accent-300'}">
+                                <span md-colors="{color: 'accent' }">{{packingGroup[0].ClientCode}}</span>
+                                <div class="md-caption">CLIENT CODE</div>
+                                <md-tooltip>{{packingGroup[0].ClientCode}}</md-tooltip>
+                            </div>
+                            <div flex></div>
+                            <div class="metaHeader" layout-align="center center" style="border-left: 5px solid; " md-truncate md-colors="{'border-color': 'accent-100'}">
+                                <span md-colors="{color: 'accent' }">{{packingGroup[0].ClientRef}}</span>
+                                <div class="md-caption">CLIENT REF</div>
+                                <md-tooltip>{{packingGroup[0].ClientRef}}</md-tooltip>
+                            </div>
+                            <div flex></div>
+                            <div class="metaHeader" md-colors="{'border-color': 'accent-400', background: 'warn'}" layout-align="start center" style="border-left: 5px solid; line-height: 75px;" ng-show="!toggleAddress">
+                                <span>{{packingGroup[0].PickingBOM}}</span>
+                                <div ng-click="toggleAddress = !toggleAddress" style="cursor: pointer;">
+                                    <md-icon md-colors="{color: 'accent'}" md-font-set="fa fa-fw fa-file-alt xs"></md-icon> |
+                                    <md-icon md-colors="{color: 'grey-50'}" md-font-set="fa fa-fw fa-map-marker-alt xs"></md-icon>
+                                </div>
+                            </div>
+                            <div class="metaHeader" md-colors="{'border-color': 'accent-400', background: 'warn'}" layout-align="start center" style="border-left: 5px solid; line-height: normal;" ng-show="toggleAddress">
+                                <span class="md-caption">
+                                    {{packingGroup[0].ShipToAddressHeader}}<br />
+                                    {{packingGroup[0].ShipToAddressStreet}} {{packingGroup[0].ShipToAddressStreetExtended}}<br />
+                                    {{packingGroup[0].ShipToAddressPostalCode}} {{packingGroup[0].ShipToAddressCity}}<br />
+                                    {{packingGroup[0].ShipToAddressRegion}} {{packingGroup[0].ShipToAddressCountry}}
+                                </span>
+                                <div ng-click="toggleAddress = !toggleAddress" style="cursor: pointer;">
+                                    <md-icon md-colors="{color: 'grey-50'}" md-font-set="fa fa-fw fa-file-alt xs"></md-icon> |
+                                    <md-icon md-colors="{color: 'accent'}" md-font-set="fa fa-fw fa-map-marker-alt xs"></md-icon>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form name="formShipping" id="formShipping">
+                            <div ng-repeat="orderLine in packingGroup" on-finish-render layout="row" layout-padding layout-align="start center" ng-class-odd="'oddRow'" ng-class-even="'evenRow'">
+                                <div ng-if="orderLine.DoIndent">&nbsp;&nbsp;&nbsp;</div>
+                                <div class="divColorTag" style="background-color: {{orderLine.ColorTag}};"></div>
+                                <div flex="15" ng-if="orderLine.PartNr">
+                                    {{orderLine.PartNr}}
+                                </div>
+                                <div flex md-truncate>
+                                    {{orderLine.PartName}}
+                                    <md-tooltip ng-if="orderLine.PartName">{{orderLine.PartName}}</md-tooltip>
+                                </div>
+                                <div ng-if="orderLine.IdMask">
+                                    <md-input-container class="md-block" ng-if="orderLine.PartNr">
+                                        <input required md-maxlength="64" name="FieldInput{{orderLine.OrderLineNr}}" ng-model="orderLine.FieldInput" tabindex="{{orderLine.OrderLineNr}}" placeholder="{{orderLine.IdMask}}" ng-pattern="orderLine.IdMask" ng-disabled="isEditing" ng-blur="UpdateOrderLine(orderLine);">
+                                        <div ng-messages="formShipping['FieldInput'+orderLine.OrderLineNr].$error">
+                                            <div ng-message="required">required.</div>
+                                            <div ng-message="pattern">Use id mask: {{orderLine.IdMask}}</div>
+                                            <div ng-message="md-maxlength">The description must be less than 16 characters long.</div>
+                                        </div>
+                                    </md-input-container>
+                                </div>
+
+                                <div ng-if="orderLine.PartNr">
+                                    <h-number @*change="boxSelectionChanged(orderLine, boxNr)"*@ value="boxNr" singular="" plural="" min="0" max="99" step="1"></h-number>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div layout="row" layout-align="center center" style="margin-bottom: -50px; margin-left: 10px;">
+                            <md-icon md-font-set="fa fa-fw fa-box xs" data-fa-transform="shrink-4" md-colors="{color: 'warn'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Stock</span>
+                            <md-icon md-font-set="fa fa-fw fa-pallet xs" md-colors="{color: 'accent-800'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Pallet</span>
+                            <md-icon md-font-set="fa fa-fw fa-warehouse xs" md-colors="{color: 'accent-600'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Floor</span>
+                            <md-icon md-font-set="fa fa-fw fa-shipping-fast xs" md-colors="{color: 'accent-400'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Shipping area</span>
+                            <md-icon md-font-set="fa fa-fw fa-file-invoice xs" md-colors="{color: 'accent-200'}"></md-icon>&nbsp;<span style="font-size: 0.8em; margin-right: 20px;">Document</span><div flex></div>
+                        </div>
+
+                        <div layout-padding>
+                            <hr class="flat" md-colors="{borderColor: 'warn'}" />
+                        </div>
+
+                        <div layout-padding layout="row" layout-align="center center">
+                            <div flex></div>
+                            <div class="md-display-1 bomNr" md-colors="{color: 'warn'}">{{packingGroup[0].PickingBOM}}</div>
+                        </div>
+                    </div>
+                </md-tab-body>
+            </md-tab>
+        </md-tabs>
+        <div style="height: 50px;"></div>
+    </md-content>
+</div>
+@*<script src="~/Scripts/Views/ShippingScript.js?@DateTime.Now.Ticks.ToString()"></script>*@
+<script src="~/Scripts/Views/ShippingScript.js"></script>

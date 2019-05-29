@@ -1,0 +1,167 @@
+﻿@{
+    ViewBag.Title = "Instructions";
+}
+<script src="~/Scripts/expansionPanel.directive.js"></script>
+<script src="~/Scripts/expansionPanel.service.js"></script>
+
+<style>
+    @@media screen {
+        #printSection {
+            display: none;
+        }
+    }
+
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #printSection, #printSection * {
+            visibility: visible;
+        }
+
+        #printSection {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+    }
+</style>
+
+<div ng-controller="ProductsCtrl" id="wiRegion" ng-app="GTS" data-ng-init="initProductsList();setScrollY(true);" style="overflow-y: auto; height: 85% ;">
+    <loading></loading>
+    <div layout="row" layout-align="center center" layout-padding style="display: flex; align-items: stretch;">
+        <md-card ng-show="dataLoaded">
+            <md-card-title>
+                <md-card-title-text>
+                    <div layout="row">
+                        <div layout="column">
+                            <span class="md-headline">Select product</span>
+                            <span class="md-subhead">Choose either a model from the list or start to type an assembly's serial.</span>
+                            <div layout="row">
+                                <div flex-gt-sm style="height: 100px; vertical-align: top;">
+                                    <md-input-container class="md-block">
+                                        <label>Model</label>
+                                        <md-select ng-model="selectedModelForInstructions" aria-label="Select model" ng-change="chooseWorkInstructionSourceForDisplay(selectedModelForInstructions, 0)">
+                                            @*<md-option ng-value="none"><em>none</em></md-option>*@
+                                            <md-option ng-value="model" ng-repeat="model in products">{{model.Name}}</md-option>
+                                        </md-select>
+                                    </md-input-container>
+                                </div>
+
+                                <div layout="column" layout-align="center center" style="height: 100px; padding-top: 17px;">
+                                    <md-autocomplete name="AssemblySerial" flex md-floating-label="Search serial numbers"
+                                                     md-item-text="assembly.Serial + ' ' + assembly.PublicSerial + ' - ' + assembly.ModelName"
+                                                     md-items="assembly in querySearchReferencePromiseForAssemblies(searchText, serialType)"
+                                                     md-search-text="searchText"
+                                                     md-selected-item="selectedAssembly"
+                                                     md-min-length="3"
+                                                     md-input-name="autocompleteField"
+                                                     md-clear-button="true"
+                                                     md-select-on-match="true"
+                                                     md-placeholder
+                                                     md-selected-item-change="chooseWorkInstructionSourceForDisplay(selectedAssembly, 1);">
+                                        <md-item-template>
+                                            <span md-highlight-text="searchText">{{assembly.Serial}} {{assembly.PublicSerial ? " - " + assembly.PublicSerial: ""}}- {{assembly.ModelName}}</span>
+                                        </md-item-template>
+                                        <md-not-found>
+                                            No matches found.
+                                        </md-not-found>
+                                    </md-autocomplete>
+                                    <md-input-container class="md-block" style="margin-top: 50px;">
+                                        <br />
+                                        <md-radio-group ng-model="serialType" layout="row" layout-align="start center" required ng-init="serialType = 1">
+                                            <md-radio-button value="1">Private serial</md-radio-button>
+                                            <md-radio-button value="2">Public serial</md-radio-button>
+                                        </md-radio-group>
+                                    </md-input-container>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </md-card-title-text>
+            </md-card-title>
+        </md-card>
+
+        @*<md-card ng-if="componentsAndInstructions && dataLoaded" layout="column" layout-align="center center">*@
+        <md-button ng-if="componentsAndInstructions && dataLoaded" ng-print print-element-id="pageMainContent" md-colors="{color: 'grey-50', background: 'accent'}" layout="column" layout-align="center center" style="margin: 8px; height: 250px; width: 250px;" md-whiteframe="1">
+            <i class="fas fa-print fa-6x"></i>
+            <span>
+                PRINT
+            </span>
+        </md-button>
+        @*<span>
+                    PRINT
+                </span>
+                <span>
+                    <em>Keep in mind that for some models the print dialog will take some time to create a preview. You can skip the preview by starting the print straight away.</em>
+                </span>
+            </md-card>*@
+    </div>
+
+    <note ng-if="componentsAndInstructions && dataLoaded" msg="'Keep in mind that for some models the print dialog will take some time to create a print preview. You can skip the preview by starting the print straight away'"></note>
+
+    <div layout="column" id="pageMainContent">
+
+        <md-card ng-if="componentsAndInstructions && dataLoaded" layout-padding>
+            <div layout="row" style="text-align: right;" layout-padding>
+                <div class="md-display-3">{{componentsAndInstructions.Name}}<br /></div>
+            </div>
+
+            <div layout="row" layout-padding>
+                <div flex></div>
+                <div layout="column">
+                    <div class="md-subhead">Version:</div>
+                    <div class="md-display-3" md-colors="{color: 'accent'}">{{componentsAndInstructions.Version}}</div>
+                </div>
+                <div flex></div>
+                <div layout="column">
+                    <div class="md-subhead">Release date:</div>
+                    <div class="md-display-2" md-colors="{color: 'accent'}">{{componentsAndInstructions.ReleaseDate.substring(0,10)}}</div>
+                </div>
+                <div flex></div>
+                <div layout="column">
+                    <div class="md-subhead">Model type:</div>
+                    <div class="md-display-2" md-colors="{color: 'accent'}">{{componentsAndInstructions.Type}}</div>
+                </div>
+                <div flex></div>
+            </div>
+
+            <div class="md-warn md-title" layout="row">
+                Product model configurations:
+            </div>
+            <div layout="row" layout-align="start center">
+                <div class="configContainer" ng-repeat="config in componentsAndInstructions.ProductModelConfigurations | orderBy: 'ConfigIndex'" style="background-color: {{config.Color}}; min-width: 60px; font-size: 0.7em;">{{config.Name}}</div>
+            </div>
+        </md-card>
+
+        <div>
+            <note msg="'Be advised, some instructions were originally written in dutch.'"></note>
+        </div>
+
+        <md-card ng-if="componentsAndInstructions && dataLoaded" ng-repeat="component in componentsAndInstructions.Components" layout-padding style="border: 0px solid red;">
+            <div layout="column">
+                <md-subheader class="md-warn" layout="row">
+                    <div layout="row" flex layout-align="start center" style="width: 920px;">
+                        <div class="md-display-3">{{component.Name}}</div>
+                        <div flex></div>
+                        <div class="configContainer" ng-repeat="config in component.ProductModelConfigurations | orderBy: 'ConfigIndex'" style="background-color: {{config.Color}}; min-width: 60px; font-size: 0.7em;">{{config.Name}}</div>
+                    </div>
+                </md-subheader>
+
+                <div layout-padding ng-if="!component.Instructions || component.Instructions.length === 0">
+                    <div class="md-title"><em>No instructions for this component</em></div>
+                </div>
+                <div layout="column" layout-padding ng-repeat="instruction in component.Instructions">
+                    <div class="md-display-1">{{instruction.SequenceOrder}}/{{component.Instructions.length}} - {{instruction.Title}}</div>
+                    <div class="md-subhead">{{instruction.Description}}</div>
+                    <img ng-src="~/Content/Images/WorkInstructions/{{instruction.Image}}" ng-if="instruction.Image.indexOf('placeholder') === -1" md-lightbox md-lightbox-title="{{instruction.Title}}" style="display: block; width:100%; cursor: pointer; " />
+                    <md-tooltip md-direction="bottom">{{instruction.Title}}</md-tooltip>
+                </div>
+            </div>
+        </md-card>
+    </div>
+</div>
+
+<script src="~/Scripts/Views/ProductScripts.js"></script>
+@*<script src="~/Scripts/Views/ProductScripts.js?@DateTime.Now.Ticks.ToString()"></script>*@

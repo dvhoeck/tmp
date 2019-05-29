@@ -1,0 +1,46 @@
+﻿@{
+    ViewBag.Title = "Open device";
+}
+
+<script>
+
+    app.controller('RemoteDevicesCtrl', ['$scope', '$http',
+        function ($scope, $http, $mdDialog, $mdMedia, $mdToast, $location, $q, deviceService) {
+            $scope.ddd =
+            $scope.init = function () {
+                $scope.address = window.location.toString().split("=")[window.location.toString().split("=").length - 1];
+
+                loadAddress($scope.address);
+            };
+            $scope.setScrollY(false);
+        }]);
+
+    function loadAddress(ip) {
+        var x = document.createElement("IFRAME");
+        var body = document.getElementById("frameContainer");
+        x.src = 'http://' + ip + ':8080?user=@User.Identity.Name';
+        body.appendChild(x);
+    }
+</script>
+
+<style>
+    iframe {
+        border: 0px;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<a href="~/RemoteDevices/">
+    <md-button class="md-raised">
+        <md-item-content layout="row" layout-align="start center" class="layout-align-start-center layout-row">
+            <div class="inset">
+                <ng-md-icon icon="memory" class="md-accent"></ng-md-icon>
+            </div>
+            <div class="inset ng-binding">
+                Go back
+            </div>
+        </md-item-content>
+    </md-button>
+</a>
+<div ng-app="GTS" id="frameContainer" ng-controller="RemoteDevicesCtrl" data-ng-init="init();">
+</div>

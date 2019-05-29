@@ -1,0 +1,42 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Manage users</h2>
+@if (User.IsInRole("Administrators"))
+{
+    <table>
+        <thead>
+            <tr>
+                <th width="300">Name</th>
+                <th>Actions / Role</th>
+            </tr>
+        </thead>
+        @foreach (Gatewing.ProductionTools.WebPortal.Controllers.ViewUser user in ViewBag.Users)
+        {
+            <tr>
+                <td>@user.Name</td>
+
+                @if (!user.IsAdmin)
+                {
+                    <td>
+                        @Html.ActionLink("Make admin", "AddUserToAdminRole", new { id = user.Id }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = user.Id })
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        @Html.ActionLink("Remove admin privileges", "RemoveUserFromAdminRole", new { id = user.Id }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = user.Id })
+                    </td>
+                }
+            </tr>
+
+        }
+    </table>
+}
+else
+{
+    <i>You must be logged in as an Administrator to be able to change roles.</i>
+}

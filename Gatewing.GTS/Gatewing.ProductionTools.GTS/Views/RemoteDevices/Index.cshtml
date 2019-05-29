@@ -1,0 +1,115 @@
+﻿@{
+    ViewBag.Title = "Remote devices";
+}
+
+<div ng-app="GTS" ng-controller="RemoteDevicesCtrl" data-ng-init="init();">
+    <md-list>
+        <md-card>
+            <md-card-content layout="row" layout-xs="column">
+                <md-input-container flex-gt-xs>
+                    <label>Filter</label>
+                    <input type="text" ng-model="filterString" id="filterField" focus-me="true">
+                </md-input-container>
+            </md-card-content>
+        </md-card>
+        <loading></loading>
+        <div ng-repeat="device in devices | filter : filterString" flex layout="column" class="@Constants.Strings.AnimationClasses">
+            <md-card md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch style="{{checkIfDateIsInRange(device.LastOnline) ? 'opacity: 1;' : 'opacity: 0.3;'}}">
+                <md-card-content>
+                    <div layout="row" layout-align="center center">
+                        <div layout="column">
+                            <span class="md-headline" style="cursor: pointer;" ng-click="openDevice(device.Address)">{{device.Name}}</span>
+                            <div ng-show="{{checkIfDateIsInRange(device.LastOnline) ? true: false}}">
+                                <md-button class="md-raised md-warn" aria-label="open" ng-click="openDevice(device.Address)">
+                                    <md-icon md-font-set="fas fa-play-circle fa-2x" />
+                                    <md-tooltip>Open</md-tooltip>
+                                </md-button>
+                                <md-button class="md-raised md-warn" aria-label="shut down" ng-click="shutdown(device.Address)">
+                                    <md-icon md-font-set="fas fa-power-off fa-2x" />
+                                    <md-tooltip>Shut down</md-tooltip>
+                                </md-button>
+                                <md-button class="md-raised md-warn" aria-label="restart" ng-click="reboot(device.Address)">
+                                    <md-icon md-font-set="fas fa-sync fa-2x" />
+                                    <md-tooltip>Restart</md-tooltip>
+                                </md-button>
+                            </div>
+                        </div>
+                        <div flex></div>
+                        <span class="md-subhead" style="text-align: right;">
+                            Last online poll: {{device.LastOnline}}<br />
+                            Address: {{device.Address}}
+                        </span>
+                        <div flex="5"></div>
+                        <div class="md-media-sm card-media">
+                            <ng-md-icon icon="{{checkIfDateIsInRange(device.LastOnline) ? 'memory' : 'cloud_off'}}" size="72"></ng-md-icon>
+                        </div>
+                    </div>
+                </md-card-content>
+            </md-card>
+        </div>
+    </md-list>
+</div>
+
+<script>
+
+    app.controller('RemoteDevicesCtrl', ['$scope', '$http', '$mdDialog', '$mdMedia', '$mdToast', '$location', '$q', 'deviceService',
+        function ($scope, $http, $mdDialog, $mdMedia, $mdToast, $location, $q, deviceService) {
+            $scope.init = function () {
+                $scope.$parent.dataLoaded = false;
+
+                var response = deviceService.getDevices();
+
+                response.then(function (result) {
+                    if (result.status == 200) {
+                        $scope.devices = JSON.parse(result.data);
+                        $scope.$parent.dataLoaded = true;
+                    }
+
+                }, function (errr) {
+                    showError(errr, $scope);
+                });
+            }
+
+            $scope.openDevice = function (address) {
+                window.location.href = 'remotedevices/OpenDevice?ip=' + address;
+            }
+
+            $scope.shutdown = function (address) {
+                var response = $http({
+                    method: "get",
+                    url: "http://" + address + ":8080/?cmd=shutdown"
+                });
+            }
+
+            $scope.reboot = function (address) {
+                var response = $http({
+                    method: "get",
+                    url: "http://" + address + ":8080/?cmd=reboot"
+                });
+            }
+
+            $scope.checkIfDateIsInRange = function (dateString) {
+                var d1 = new Date().getTime();
+                var d2 = new Date(dateString).getTime();
+
+                if ((d1 - d2) < 600000) {
+                    return true;
+                }
+
+                return false;
+            }
+
+        }]);
+
+    app.service("deviceService", function ($http) {
+        // make admin call
+        this.getDevices = function () {
+            var response = $http
+            ({
+                method: "get",
+                url: "/RemoteDevices/GetDevices/"
+            });
+            return response;
+        };
+    });
+</script>

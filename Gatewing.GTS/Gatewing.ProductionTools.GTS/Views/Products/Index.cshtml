@@ -1,0 +1,224 @@
+﻿@{
+    ViewBag.Title = "Product models";
+}
+<script src="~/Scripts/expansionPanel.directive.js"></script>
+<script src="~/Scripts/expansionPanel.service.js"></script>
+<div ng-controller="ProductsCtrl" ng-app="GTS" data-ng-init="initProductsList()">
+    <md-list>
+        <md-card>
+            <md-card-content layout="column">
+                <md-input-container>
+                    <label>Filter</label>
+                    <input type="text" ng-model="search" id="filterField" focus-me="true">
+                </md-input-container>
+            </md-card-content>
+        </md-card>
+        <div dvh-pagination data="products"></div>
+        <loading></loading>
+
+        <!-- PRODUCT LIST -->
+        <md-item ng-repeat="product in filtered | startFrom:(currentPage-1)*entryLimit | limitTo:entryLimit track by product.Id" class="@Constants.Strings.AnimationClasses" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
+            <md-card class="md-accent" md-theme-watch="" layout="row">
+                <md-card-actions layout="row" layout-xs="column" layout-align="center center" layout-align-xs="start center" flex="5">
+                    <a href="/Products/AddEditProductModel/{{product.Id}}" style="cursor: pointer;">
+                        <ng-md-icon icon="mode_edit" aria-label="Edit product model"></ng-md-icon>
+                        <md-tooltip md-direction="top">Edit model and components</md-tooltip>
+                    </a>
+                </md-card-actions>
+                <md-card-title layout="row" layout-align="center start" flex>
+                    <md-card-title-text>
+                        <span class="md-headline">
+                            {{product.Name}}
+                        </span>
+                        <span class="md-subhead">{{product.Comment}}</span>
+                    </md-card-title-text>
+                </md-card-title>
+                <md-card-actions layout="row" layout-align="center center" flex="10" hide-xs>
+                    <md-button class="md-fab md-mini md-primary greyButton" style="width: 52px; height: 52px;" aria-label="Version history" ng-click="redirectToCurrentRelease(product.BaseModelId)">
+                        v{{product.Version > 0 ? product.Version -1: 0}}
+                    </md-button>
+                </md-card-actions>
+                <md-card-actions layout="row" layout-xs="column" layout-align="center center" layout-align-xs="start center" flex="5">
+                    <!-- MENU -->
+                    <md-menu md-position-mode="target-right target">
+                        <md-button aria-label="Open product model menu" class="md-icon-button" ng-click="$mdMenu.open($event)">
+                            <ng-md-icon icon="more_vert"></ng-md-icon>
+                        </md-button>
+                        <md-menu-content>
+                            <md-menu-item>
+                                <md-button class="md-secondary" ng-href="/Products/CurrentModelRelease/{{product.Id}}">
+                                    <div layout="row" layout-align="start center">
+                                        <div>
+                                            <md-icon md-font-set="fa fa-fw fa-eye" class="md-toggle-icon"></md-icon>
+                                        </div>
+                                        <div>&nbsp;View release</div>
+                                    </div>
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-item>
+                                <md-button class="md-secondary" ng-click="deleteProduct($event, product.Id)">
+                                    <div layout="row" layout-align="start center">
+                                        <div>
+                                            <md-icon md-font-set="fa fa-fw fa-archive" class="md-toggle-icon"></md-icon>
+                                        </div>
+                                        <div>&nbsp;Archive model</div>
+                                    </div>
+                                </md-button>
+                            </md-menu-item>
+                            <md-menu-item>
+                                <md-button class="md-secondary" ng-click="showCloneProductDialog($event, product)">
+                                    <div layout="row" layout-align="start center">
+                                        <div>
+                                            <md-icon md-font-set="fa fa-fw fa-copy" class="md-toggle-icon"></md-icon>
+                                        </div>
+                                        <div>&nbsp;Clone model</div>
+                                    </div>
+                                </md-button>
+                            </md-menu-item>
+                        </md-menu-content>
+                    </md-menu>
+                </md-card-actions>
+            </md-card>
+        </md-item>
+        <div dvh-pagination data="toolingList"></div>
+    </md-list>
+</div>
+
+<!-- DETAIL VIEW (ARCHIVAL / DELETION) -->
+<script type="text/ng-template" id="detailview-template.html">
+    <md-dialog aria-label="Product model detail" ng-controller="ProductsCtrl" ng-app="GTS" flex="40" ng-cloak>
+        <form name="detailForm" data-ng-init="initProductDetail()">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Product model</h2>
+                    <span flex></span>
+                    <md-button ng-click="answer('cancel')" class="md-icon-button">
+                        <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+
+            <md-dialog-content>
+                <div class="md-dialog-content">
+                    <div class="infoContainer">
+                        <h3>Deletion</h3>
+                        <ul>
+                            <li>no new product assemblies can be made from this model after deletion</li>
+                            <li>existing assemblies can still be used</li>
+                            <li>components for this assembly are rendered unusable as well</li>
+                        </ul>
+                    </div>
+                </div>
+            </md-dialog-content>
+
+            <md-dialog-content>
+                <div class="md-dialog-content">
+                    <h3>{{product.Name}}&nbsp;(v{{product.Version}})</h3>
+
+                    <div layout="row">
+                        <div flex>
+                            <label class="textLabel">Date</label><br />
+                            <span>{{product.Date}}</span>
+                        </div>
+                        <div flex>
+                            <label class="textLabel">Serial format</label><br />
+                            <span>{{product.IdMask}}</span>
+                        </div>
+                    </div>
+                    <br />
+                    <div>
+                        <div flex>
+                            <label class="textLabel">Comment</label><br />
+                            {{product.Comment}}
+                        </div>
+                    </div>
+                </div>
+            </md-dialog-content>
+            <md-dialog-actions layout="row">
+                <span flex></span>
+                <md-button ng-click="answer('cancel')">
+                    close
+                </md-button>
+                <md-button ng-click="answer('delete', product.Id)" ng-disabled="isSaving">
+                    archive
+                    <div>
+                        <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                    </div>
+                </md-button>
+            </md-dialog-actions>
+        </form>
+    </md-dialog>
+</script>
+
+<!-- CLONE FORM -->
+<script type="text/ng-template" id="cloneView-template.html">
+    <md-dialog aria-label="Product model clone form" ng-controller="ProductsCtrl" ng-app="GTS" flex="40" ng-cloak>
+        <form name="cloneForm">
+            <md-toolbar>
+                <div class="md-toolbar-tools">
+                    <h2>Product model</h2>
+                    <span flex></span>
+                    <md-button ng-click="answer('cancel')" class="md-icon-button">
+                        <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+
+            <md-dialog-content layout-padding layout="row" layout-align="center center">
+                <div flex="10"></div>
+                <div layout="column" flex>
+                    <br />
+                    <md-input-container layout-padding>
+                        <label>Name</label>
+                        <input name="CloneName" ng-model="cloneModel.name" required md-maxlength="90">
+                        <div ng-messages="cloneForm.CloneName.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="md-maxlength">The name must be less than 90 characters long.</div>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container flex-xs="10" layout-padding>
+                        <label>Id mask</label>
+                        <input name="CloneIdMask" ng-model="cloneModel.idMask" required md-maxlength="250">
+                        <div ng-messages="cloneForm.CloneIdMask.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="md-maxlength">The serial format must be less than 250 characters long.</div>
+                        </div>
+                    </md-input-container>
+
+                    <md-input-container flex-xs="10" layout-padding>
+                        <label>Description</label>
+                        <textarea name="CloneDescription" ng-model="cloneModel.description" required md-maxlength="250"></textarea>
+                        <div ng-messages="cloneForm.CloneDescription.$error">
+                            <div ng-message="required">This is required.</div>
+                            <div ng-message="md-maxlength">The description must be less than 250 characters long.</div>
+                        </div>
+                    </md-input-container>
+                </div>
+                <div flex="10"></div>
+            </md-dialog-content>
+            <md-dialog-actions layout="row">
+                <span flex></span>
+                <md-button ng-click="answer('cancel')">
+                    cancel
+                </md-button>
+                <md-button ng-click="answer('clone', cloneModel)" ng-disabled="isSaving">
+                    CLONE
+                    <div>
+                        <md-progress-linear md-mode="indeterminate" ng-show="isSaving"></md-progress-linear>
+                    </div>
+                </md-button>
+            </md-dialog-actions>
+        </form>
+    </md-dialog>
+</script>
+
+<!-- ADD NEW LINK -->
+<a href="/Products/AddEditProductModel">
+    <md-button ng-controller="ProductsCtrl" class="md-fab md-fab-bottom-right docs-scroll-fab md-button md-ink-ripple scrolling" aria-label="New Product" style="position:fixed !important;">
+        <md-tooltip md-direction="top">New product model</md-tooltip>
+        <ng-md-icon icon="add"></ng-md-icon>
+    </md-button>
+</a>
+
+<script src="~/Scripts/Views/ProductScripts.js?@DateTime.Now.Ticks.ToString()"></script>

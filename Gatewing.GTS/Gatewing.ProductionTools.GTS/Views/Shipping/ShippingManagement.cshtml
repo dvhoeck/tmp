@@ -1,0 +1,118 @@
+﻿@{
+    ViewBag.Title = "ShippingManagement";
+}
+
+<div ng-controller="ShippingCtrl" ng-app="GTS" layout="column" data-ng-init="InitShippingManagement();" ng-cloak>
+    <loading></loading>
+    @if (User.IsInRole("Administrators"))
+    {
+        <md-content layout="row">
+            
+            <md-tabs class="md-secondary" md-stretch-tabs="always" md-dynamic-height md-selected="0" flex>
+                <md-tab>
+                    <md-tab-label layout="row" layout-align="center center">
+                        <i class="fa fa-shipping-fast"></i>
+                        <span>SHIPPINGS</span>
+                    </md-tab-label>
+                    <md-tab-body>
+                        <!-- SHIPPING LIST WITH START / STOP AND ROLLBACK CONTROLS -->
+
+                        <md-item ng-repeat="shipping in shippings  | orderBy: 'BOMNr' track by $index" layout="row">
+                            <md-card class="md-accent" md-theme-watch="" layout="row" flex="100">
+                                <md-card-actions layout="row" layout-xs="column" layout-align="center center" layout-align-xs="start center" flex="5">
+                                    <a href="#" style="cursor: pointer;" ng-if="shipping.IsActive">
+                                        <md-icon md-font-set="fa fa-fw fa-stop" class="md-toggle-icon"></md-icon>
+                                        <md-tooltip md-direction="top">Stop shipment</md-tooltip>
+                                    </a>
+                                    <a href="#" style="cursor: pointer;" ng-if="!shipping.IsActive">
+                                        <md-icon md-font-set="fa fa-fw fa-play" class="md-toggle-icon"></md-icon>
+                                        <md-tooltip md-direction="top">Start shipment</md-tooltip>
+                                    </a>
+                                </md-card-actions>
+                                <md-card-content layout="row" layout-align="start center" flex="100">
+                                    <span class="md-headline" flex="33">
+                                        {{shipping.BOMNr}}
+                                    </span>
+                                    <span flex>
+                                    </span>
+                                    <span>
+                                        <shipping-activated active="shipping.IsActive"></shipping-activated>
+                                    </span>
+                                    <md-card-actions layout="row" layout-xs="column" layout-align="center center" layout-align-xs="start center" flex="5">
+                                        <!-- MENU -->
+                                        <md-menu md-position-mode="target-right target">
+                                            <md-button aria-label="Open product model menu" class="md-icon-button" ng-click="$mdMenu.open($event)">
+                                                <ng-md-icon icon="more_vert"></ng-md-icon>
+                                            </md-button>
+                                            <md-menu-content>
+                                                <md-menu-item>
+                                                    <md-button class="md-secondary" ng-href="/Products/CurrentModelRelease/{{product.Id}}">
+                                                        <div layout="row" layout-align="start center">
+                                                            <div>
+                                                                <md-icon md-font-set="fa fa-fw fa-trash-alt" class="md-toggle-icon"></md-icon>
+                                                            </div>
+                                                            <div>&nbsp;Roll back</div>
+                                                        </div>
+                                                    </md-button>
+                                                </md-menu-item>
+                                                <md-menu-item>
+                                                    <md-button class="md-secondary" ng-click="deleteProduct($event, product.Id)">
+                                                        <div layout="row" layout-align="start center">
+                                                            <div>
+                                                                <md-icon md-font-set="fa fa-fw fa-play" class="md-toggle-icon"></md-icon>
+                                                            </div>
+                                                            <div>&nbsp;Start</div>
+                                                        </div>
+                                                    </md-button>
+                                                </md-menu-item>
+                                                <md-menu-item>
+                                                    <md-button class="md-secondary" ng-click="showCloneProductDialog($event, product)">
+                                                        <div layout="row" layout-align="start center">
+                                                            <div>
+                                                                <md-icon md-font-set="fa fa-fw fa-stop" class="md-toggle-icon"></md-icon>
+                                                            </div>
+                                                            <div>&nbsp;Stop</div>
+                                                        </div>
+                                                    </md-button>
+                                                </md-menu-item>
+                                            </md-menu-content>
+                                        </md-menu>
+                                    </md-card-actions>
+                                </md-card-content>
+                            </md-card>
+                        </md-item>
+                        
+                        @*<div layout="column" layout-align="center center" style="background-color: red;">
+                            >
+                        </div>*@
+                    </md-tab-body>
+                </md-tab>
+                <md-tab>
+                    <md-tab-label layout="row" layout-align="center center">
+                        <i class="fa fa-box"></i>
+                        <span>BOXES</span>
+                    </md-tab-label>
+                    <md-tab-body>
+                        <div>sùlmdk</div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab>
+                    <md-tab-label layout="row" layout-align="center center">
+                        <i class="fa fa-link"></i>
+                        <span>LINK PARTNRS TO BOXES</span>
+                    </md-tab-label>
+                    <md-tab-body>
+                        <div>sùlmdk</div>
+                    </md-tab-body>
+                </md-tab>
+            </md-tabs>
+        </md-content>
+    }
+    else
+    {
+        <h3>You are not authorized to view this content.</h3>
+    }
+</div>
+
+@*<script src="~/Scripts/Views/ShippingScript.js?@DateTime.Now.Ticks.ToString()"></script>*@
+<script src="~/Scripts/Views/ShippingScript.js"></script>

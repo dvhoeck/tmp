@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{52D896B3-28D7-4F4A-BA4C-03832147E3D2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gatewing.ProductionTools.DAL</RootNamespace>
+    <AssemblyName>Gatewing.ProductionTools.DAL</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>%24/OPS/Gatewing.ProductionTools/Gatewing.ProductionTools.DAL</SccProjectName>
+    <SccLocalPath>.</SccLocalPath>
+    <SccAuxPath>http://beg-gdr8q02:8080/tfs/defaultcollection</SccAuxPath>
+    <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseGent|AnyCPU'">
+    <OutputPath>bin\ReleaseGent\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseToulouse|AnyCPU'">
+    <OutputPath>bin\ReleaseToulouse\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_BEG-BNSLN32|AnyCPU'">
+    <OutputPath>bin\Release_BEG-BNSLN32\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FluentNHibernate">
+      <HintPath>..\packages\FluentNHibernate.1.4.0.0\lib\net35\FluentNHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="Iesi.Collections">
+      <HintPath>..\packages\Iesi.Collections.3.2.0.4000\lib\Net35\Iesi.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NHibernate">
+      <HintPath>..\packages\NHibernate.3.3.1.4000\lib\Net35\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Device" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AutomappingConfiguration.cs" />
+    <Compile Include="EventListeners\BusinessRuleEventListener.cs" />
+    <Compile Include="GTSDataRepository.cs" />
+    <Compile Include="Mapping\ArchivedPublicProductSerialMap.cs" />
+    <Compile Include="Mapping\AssemblyToolMap.cs" />
+    <Compile Include="Mapping\ComponentAssemblyMap.cs" />
+    <Compile Include="Mapping\EntityChangeMap.cs" />
+    <Compile Include="Mapping\GTSWorkInstructionMap.cs" />
+    <Compile Include="Mapping\NoteMap.cs" />
+    <Compile Include="Mapping\PartNumberMap.cs" />
+    <Compile Include="Mapping\PasswordHelperMap.cs" />
+    <Compile Include="Mapping\ProductAssemblyMap.cs" />
+    <Compile Include="Mapping\ProductModelConfigurationMap.cs" />
+    <Compile Include="Mapping\ProductModelStateMap.cs" />
+    <Compile Include="Mapping\ProductComponentMap.cs" />
+    <Compile Include="Mapping\ProductModelMap.cs" />
+    <Compile Include="Mapping\RemarkImageMap.cs" />
+    <Compile Include="Mapping\RemarkSymptomCauseMap.cs" />
+    <Compile Include="Mapping\RemarkSymptomMap.cs" />
+    <Compile Include="Mapping\RemarkSymptomSolutionMap.cs" />
+    <Compile Include="Mapping\RemarkSymptomTypeCauseMap.cs" />
+    <Compile Include="Mapping\RemarkSymptomTypeSolutionMap.cs" />
+    <Compile Include="Mapping\RemarkSymptomTypeMap.cs" />
+    <Compile Include="Mapping\RemoveDeviceMap.cs" />
+    <Compile Include="Mapping\ReportMap.cs" />
+    <Compile Include="Mapping\SageShippingEntitiesMap.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitOfWork.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Gatewing.ProductionTools.BLL\Gatewing.ProductionTools.BLL.csproj">
+      <Project>{e70bd387-9757-49e8-8fa2-dd7a526963e5}</Project>
+      <Name>Gatewing.ProductionTools.BLL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gatewing.ProductionTools.ExtensionMethods\Gatewing.ProductionTools.ExtensionMethods.csproj">
+      <Project>{3e72c762-1576-45b8-a779-0e21ad9a62d3}</Project>
+      <Name>Gatewing.ProductionTools.ExtensionMethods</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gatewing.ProductionTools.Logging\Gatewing.ProductionTools.Logging.csproj">
+      <Project>{5d78480f-e337-4bff-b340-fcb30169dbec}</Project>
+      <Name>Gatewing.ProductionTools.Logging</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,582 @@
+﻿@using System.Configuration;
+@{
+    ViewBag.Title = "Product remarks";
+}
+<link rel="stylesheet" href="~/Content/expansionPanels-theme.css">
+<link rel="stylesheet" href="~/Content/expansionPanels.css">
+<script src="~/Scripts/expansionPanel.directive.js"></script>
+<script src="~/Scripts/expansionPanel.service.js"></script>
+<script src="~/Scripts/expansionPanelCollapsed.directive.js"></script>
+<script src="~/Scripts/expansionPanelExpanded.directive.js"></script>
+<script src="~/Scripts/expansionPanelFooter.directive.js"></script>
+<script src="~/Scripts/expansionPanelGroup.directive.js"></script>
+<script src="~/Scripts/expansionPanelGroup.service.js"></script>
+<script src="~/Scripts/expansionPanelHeader.directive.js"></script>
+<script src="~/Scripts/expansionPanelIcon.directive.js"></script>
+<style>
+    .remarkFlowCauseElementPlaceholder {
+        border: 4px dashed transparent;
+        color: #ccc;
+        height: 75px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        text-align: center;
+        cursor: pointer;
+        vertical-align: middle;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+        .remarkFlowSolutionElementPlaceholder:hover, .remarkFlowCauseElementPlaceholder:hover {
+            border: 4px dashed #999;
+            color: #999;
+        }
+
+    .remarkFlowSolutionElementPlaceholder {
+        border: 4px dashed transparent;
+        color: #ccc;
+        height: 75px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        text-align: center;
+        cursor: pointer;
+        vertical-align: middle;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .animate-enter,
+    .animate-leave {
+        -webkit-transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+        -moz-transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+        -ms-transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+        -o-transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+        transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+        position: relative;
+        display: block;
+    }
+
+        .animate-enter.animate-enter-active,
+        .animate-leave {
+            opacity: 1;
+            top: 0;
+            height: 30px;
+        }
+
+            .animate-leave.animate-leave-active,
+            .animate-enter {
+                opacity: 0;
+                top: -50px;
+                height: 0px;
+            }
+
+    .md-docsDark-theme .lf-ng-md-file-input-caption-text-default {
+        color: #ccc !important;
+    }
+</style>
+<div ng-controller="RemarkCtrl" ng-app="GTS">
+    <md-toolbar class="md-warn">
+        <div class="md-toolbar-tools">
+            <h2 class="md-flex">Remarks for assembly: <a href="/Products/Assembly/{{ProductAssemblyId}}" md-colors="{color: 'grey-100'}">{{AssemblyName}}</a></h2>
+            <div flex></div>
+            @if (@ConfigurationManager.AppSettings["tenancy"] == "none" || @ConfigurationManager.AppSettings["tenancy"] == "gent")
+            {
+                <div>
+                    <md-button class="md-button md-ink-ripple scrolling" ng-if="true" ng-click="openRemarkPrintScreen(ProductAssemblyId ? ProductAssemblyId : id());">
+                        <md-tooltip md-direction="top">Click to print remarks</md-tooltip>
+                        <div layout="row" layout-align="center center" style="margin-right: -5px;">
+                            <i class="fas fa-tag fa-2x"></i>
+                        </div>
+                    </md-button>
+                </div>
+            }
+            <div flex="6">
+                <md-button class="md-button md-ink-ripple scrolling" ng-href="/Remark/DisplayRemarkHistory/{{ProductAssemblyId ? ProductAssemblyId : id()}}">
+                    <md-tooltip>View history</md-tooltip>
+                    <ng-md-icon icon="history" size="32" md-colors="{fill: 'grey-50'}"></ng-md-icon>
+                </md-button>
+            </div>
+        </div>
+    </md-toolbar>
+    <form name="symptomForm" data-ng-init="initRemarks()">
+        <md-expansion-panel md-component-id="panelOne{{symptom.Id}}" auto-expand="true" ng-repeat="symptom in remarkSymptoms" ng-animate="'animate'" ng-controller="RemarkChildCtrl">
+            <md-expansion-panel-collapsed>
+                <md-tooltip>Click to expand</md-tooltip>
+                <div flex>
+                    <input type="hidden" name="RemarkId" value="{{symptom.Id}}" />
+                    <div layout="row" flex>
+                        <div style="margin-top: 10px;"><ng-md-icon icon="keyboard_arrow_down"></ng-md-icon></div>
+                        <div class="md-title">{{symptom.RemarkSymptomType.Name}}</div>
+                        <div flex>{{symptom.Description}}</div>
+                        <div flex="5"></div>
+                        <div>Raised: {{symptom.CreationDate.toLocaleDateString('nl-BE')}}</div>
+                        <div flex="5"></div>
+                        <md-menu md-position-mode="target-right target" style="margin-top: 10px; cursor: pointer;">
+                            <a ng-click="$mdMenu.open($event)"><md-tooltip>More...</md-tooltip><ng-md-icon icon="more_vert" aria-label="More..."></ng-md-icon></a>
+                            <md-menu-content width="3">
+                                <md-menu-item>
+                                    <a href="#" ng-click="addCauseToSymptom(symptom.Id); $panel.expand()">
+                                        <md-item-content layout="row" layout-align="start center">
+                                            <div class="inset">
+                                                <ng-md-icon icon="find_in_page" />
+                                            </div>
+                                            <div class="inset">
+                                                Add cause
+                                            </div>
+                                        </md-item-content>
+                                    </a>
+                                </md-menu-item>
+                                <md-menu-item ng-if="symptom.RemarkSymptomCauses == null ||  symptom.RemarkSymptomCauses.length < 1">
+                                    <a ng-click="deleteSymptom(symptom.Id)">
+                                        <md-item-content layout="row" layout-align="start center">
+                                            <div class="inset">
+                                                <ng-md-icon icon="delete" />
+                                            </div>
+                                            <div class="inset">
+                                                Archive remark
+                                            </div>
+                                        </md-item-content>
+                                    </a>
+                                </md-menu-item>
+                            </md-menu-content>
+                        </md-menu>
+                    </div>
+                </div>
+            </md-expansion-panel-collapsed>
+            <md-expansion-panel-expanded>
+                <md-expansion-panel-content style="padding: 0px;">
+                    <md-content md-theme="docsDark">
+                        <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                            <div flex>
+                                <ul>
+                                    <md-item ng-repeat="error in saveResult">
+                                        <li>{{error}}</li>
+                                    </md-item>
+                                </ul>
+                            </div>
+                            <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                            </md-button>
+                        </div>
+                        <input type="hidden" name="ProductAssembly" ng-model="symptom.ProductAssembly" />
+                        <div layout="row" flex class="md-padding">
+                            <div flex></div>
+                            <md-input-container flex="15" class="md-block" style="margin-top: -10px;">
+                                <label style="font-size: 12px;">Resolved?</label>
+                                <md-switch ng-model="symptom.Resolved" aria-label="Resolved?" style="margin-top: 29px;" md-theme="default">
+                                    {{ symptom.Resolved }}
+                                </md-switch>
+                            </md-input-container>
+                            <md-input-container flex="65" class="md-block">
+                                <label>Symptom type</label>
+                                <md-select placeholder="Select state" ng-model="symptom.RemarkSymptomType" ng-model-options="{trackBy: '$value.Id'}" name="RemarkSymptomType">
+                                    <md-option ng-value="{{remarkSymptomType}}" ng-repeat="remarkSymptomType in remarkTypes">{{remarkSymptomType.Name}}</md-option>
+                                </md-select>
+                            </md-input-container>
+                            <div flex></div>
+                        </div>
+                        <div layout="row" flex class="md-padding">
+                            <div flex></div>
+                            <md-input-container flex="40" class="md-block">
+                                <label>Created date</label>
+                                <md-datepicker ng-model="symptom.CreationDate" required md-placeholder="Enter date" ng-disabled="isEditing"></md-datepicker>
+                            </md-input-container>
+                            <md-input-container flex="40" class="md-block" center>
+                                <label>Resolution date</label>
+                                <input type="date" name="date" ng-model="symptom.ResolveDate" ng-disabled="true">
+                            </md-input-container>
+                            <div flex></div>
+                        </div>
+                        <div layout="row" flex class="md-padding">
+                            <div flex></div>
+                            <md-input-container flex="80" class="md-block">
+                                <label>Description</label>
+                                <textarea name="Description" cols="40" rows="3" required md-maxlength="2500" ng-model="symptom.Description"></textarea>
+                                <div ng-messages="symptomForm.Description.$error">
+                                    <div ng-message="required">This is required.</div>
+                                    <div ng-message="md-maxlength">The description must be less than 2500 characters long.</div>
+                                </div>
+                            </md-input-container>
+                            <div flex></div>
+                        </div>
+                        <div layout="row" class="md-padding">
+                            <div flex></div>
+                            <md-input-container class="md-block" flex="80" md-theme="docsLight">
+                                <lf-ng-md-file-input lf-files="symptomImages" accept="image/*" multiple progress lf-placeholder="Select new sympton images"></lf-ng-md-file-input>
+                                <div ng-messages="symptomForm.SymptomImage.$error">
+                                </div>
+                            </md-input-container>
+                            <div flex></div>
+                        </div>
+                        <div flex class="md-padding" layout="row" layout-wrap>
+                            <div flex></div>
+                            <div ng-repeat="image in symptom.Images" flex="80" md-padding layout="column" style="text-align: center;">
+                                <md-input-container class="md-block" md-padding style="text-align: center;">
+                                    <div style="overflow: hidden; height: 100px;">
+                                        <img src="/Content/Images/Remarks/{{image.ImagePath}}" width="150" ng-click="openSymptomLightboxModal($index)" /><br />
+                                    </div>
+                                    <a href="#" ng-click="removeImage(symptom, $index)" style="color: white;">[ remove image ]</a>
+                                </md-input-container>
+                                <md-input-container class="md-block" md-padding>
+                                    <label>Image description</label>
+                                    <textarea name="imageDescription_{{$index}}" cols="10" rows="1" required md-maxlength="50" ng-model="image.Description"></textarea>
+                                    <div ng-messages="symptomForm['imageDescription_' + $index].$error">
+                                        <div ng-message="md-maxlength">The description must be less than 50 characters long.</div>
+                                        <div ng-message="required">Please add a description for this image.</div>
+                                    </div>
+                                </md-input-container>
+                            </div>
+                            <div flex></div>
+                        </div>
+                    </md-content>
+                    <md-expansion-panel-group>
+                        <div flex ng-repeat="cause in symptom.RemarkSymptomCauses" ng-controller="RemarkChildCtrl">
+                            <md-content>
+                                <form name="causeForm">
+                                    <md-expansion-panel md-component-id="panelCause" auto-expand="true" class="md-padding">
+                                        <md-expansion-panel-collapsed style="line-height:normal;">
+                                            <md-tooltip>Click to expand</md-tooltip>
+                                            <div layout="row" flex layout-align="right">
+                                                <div flex="9">
+                                                    <i class="material-icons" md-colors="{color: 'grey-800'}" style="font-size: 56px;">find_in_page</i>
+                                                </div>
+                                                <div flex layout="row">
+                                                    <div flex="65" class="md-title" layout="column">
+                                                        <div md-colors="{color: 'accent-600'}">Cause:</div>
+                                                        <div>{{cause.CauseType.Name}}</div>
+                                                        <div class="md-summary">{{cause.Description}}</div>
+                                                    </div>
+                                                    <div flex="35" layout="column" class="md-summary">
+                                                        <div flex></div>
+                                                        <div layout="row">
+                                                            <div>Created: </div>
+                                                            <div>
+                                                                {{cause.CauseDate.toLocaleDateString('nl-BE')}}
+                                                            </div>
+                                                        </div>
+                                                        <div layout="row" ng-if="cause.ComponentAssembly != null">
+                                                            <div>Assembly:&nbsp;</div>
+                                                            <div>
+                                                                {{cause.ComponentAssembly.Name}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </md-expansion-panel-collapsed>
+                                        <md-expansion-panel-expanded>
+                                            <md-expansion-panel-header style="border-bottom: 0px solid !important; border-top: 0px solid; !important">
+                                                <div layout="row" flex>
+                                                    <i class="material-icons" md-colors="{color: 'accent-600'}" style="font-size: 48px;">find_in_page</i>
+                                                    <h1 md-colors="{color: 'accent-600'}">Cause</h1>
+                                                </div>
+                                            </md-expansion-panel-header>
+                                            <md-expansion-panel-content style="border-bottom: 0px solid !important; border-top: 0px solid !important;">
+                                                <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                                                    <div flex>
+                                                        <ul>
+                                                            <md-item ng-repeat="error in saveResult">
+                                                                <li>{{error}}</li>
+                                                            </md-item>
+                                                        </ul>
+                                                    </div>
+                                                    <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                                        <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                                                    </md-button>
+                                                </div>
+                                                <div layout="row" flex class="md-padding">
+                                                    <div flex></div>
+                                                    <md-input-container flex="40" class="md-block">
+                                                        <label>Cause type</label>
+                                                        <md-select placeholder="Select cause type" required ng-model="cause.CauseType" ng-model-options="{trackBy: '$value.Id'}" name="RemarkSymptomCauseType">
+                                                            <md-option ng-value="{{causeType}}" ng-repeat="causeType in causeTypes">{{causeType.Name}}</md-option>
+                                                        </md-select>
+                                                    </md-input-container>
+                                                    <md-input-container flex="40" class="md-block">
+                                                        <label>Component assembly</label>
+                                                        <md-select placeholder="Select component assembly" ng-model="cause.ComponentAssembly" ng-model-options="{trackBy: '$value.Id'}" name="RemarkSymptomCauseType">
+                                                            <md-option ng-value="">None</md-option>
+                                                            <md-option ng-value="{{assembly}}" ng-repeat="assembly in symptom.ComponentAssemblies">{{assembly.Name}}</md-option>
+                                                        </md-select>
+                                                    </md-input-container>
+                                                    <div flex></div>
+                                                </div>
+                                                <div layout="row" flex class="md-padding">
+                                                    <div flex></div>
+                                                    <md-input-container flex="40" class="md-block">
+                                                        <label>Created date</label>
+                                                        <md-datepicker ng-model="cause.CauseDate" required md-placeholder="Enter date" ng-disabled="isEditing"></md-datepicker>
+                                                    </md-input-container>
+                                                    <md-input-container flex="20" class="md-block">
+                                                        <label>Time spent</label>
+                                                        <input type="number" name="costs" min="0" required ng-model="cause.TimeSpent"><b>hrs</b>
+                                                    </md-input-container>
+                                                    <md-input-container flex="20" class="md-block">
+                                                        <label>Material cost</label>
+                                                        <input type="number" name="costs" min="0" required ng-model="cause.MaterialCost"><b>€</b>
+                                                    </md-input-container>
+                                                    <div flex></div>
+                                                </div>
+                                                <div layout="row" flex class="md-padding">
+                                                    <div flex></div>
+                                                    <md-input-container flex="80" class="md-block">
+                                                        <label>Description</label>
+                                                        <textarea name="causeDescription" cols="40" rows="3" required md-maxlength="2500" ng-model="cause.Description"></textarea>
+                                                        <div ng-messages="symptomForm.causeDescription.$error">
+                                                            <div ng-message="required">This is required.</div>
+                                                            <div ng-message="md-maxlength">The description must be less than 2500 characters long.</div>
+                                                        </div>
+                                                    </md-input-container>
+                                                    <div flex></div>
+                                                </div>
+                                                <div layout="row" class="md-padding">
+                                                    <div flex></div>
+                                                    <md-input-container class="md-block" flex="80" md-theme="docsLight">
+                                                        <lf-ng-md-file-input lf-files="$parent.causeImages" accept="image/*" multiple lf-placeholder="Select new cause images"></lf-ng-md-file-input>
+                                                        <div ng-messages="symptomForm.SymptomImage.$error">
+                                                        </div>
+                                                    </md-input-container>
+                                                    <div flex></div>
+                                                </div>
+                                                <div layout="row" class="md-padding" layout-wrap>
+                                                    <div flex></div>
+                                                    <div ng-repeat="image in cause.Images" flex="80" layout="column" style="text-align: center;">
+                                                        <md-input-container>
+                                                            <div style="overflow: hidden; height: 100px;">
+                                                                <img src="/Content/Images/Remarks/{{image.ImagePath}}" width="150" ng-click="openCauseLightboxModal($index)" /><br />
+                                                            </div>
+                                                            <a href="#" ng-click="removeImage(cause, $index)">[ remove image ]</a>
+                                                        </md-input-container>
+                                                        <md-input-container class="md-block" md-padding>
+                                                            <label>Image description</label>
+                                                            <textarea name="causeImageDescription_{{$index}}" cols="10" rows="1" required md-maxlength="50" ng-model="image.Description"></textarea>
+                                                            <div ng-messages="symptomForm['causeImageDescription_' + $index].$error">
+                                                                <div ng-message="md-maxlength">The description must be less than 50 characters long.</div>
+                                                                <div ng-message="required">Please add a description for this image.</div>
+                                                            </div>
+                                                        </md-input-container>
+                                                    </div>
+                                                    <div flex></div>
+                                                </div>
+                                                <md-content ng-hide="cause.RemarkSymptomSolution != null">
+                                                    <div class="remarkFlowSolutionElementPlaceholder" ng-click="addSolutionToCause(cause.Id)">
+                                                        <span style="font-size: 3em; border: 0px solid red;"> + click to add a solution</span>
+                                                    </div>
+                                                </md-content>
+                                            </md-expansion-panel-content>
+                                            <div class="md-expansion-panel-footer-container" flex layout="row">
+                                                <button class="md-warn md-button ng-scope md-ink-ripple" type="button" ng-click="$panel.collapse();" aria-label="Collapse">
+                                                    <md-tooltip md-direction="top">Click to collapse region</md-tooltip>
+                                                    <span class="ng-scope">Collapse</span><div class="md-ripple-container"></div>
+                                                </button>
+                                                <div flex></div>
+                                                <md-button ng-click="deleteCause($event, cause.Id, symptom)" style="margin-right:20px;">
+                                                    <md-tooltip md-direction="top">Delete cause (and solution)</md-tooltip>
+                                                    <ng-md-icon icon="delete" md-colors="{fill: 'grey-800'}" size="48" aria-label="Delete cause"></ng-md-icon>
+                                                </md-button>
+                                            </div>
+                                        </md-expansion-panel-expanded>
+                                    </md-expansion-panel>
+                                </form>
+                            </md-content>
+                            <md-content ng-if="cause.RemarkSymptomSolution != null">
+                                <md-expansion-panel md-component-id="panelOne" auto-expand="true" class="md-padding">
+                                    <md-expansion-panel-collapsed style="line-height:normal;">
+                                        <md-tooltip>Click to expand</md-tooltip>
+                                        <div layout="row" flex style="padding-bottom: 35px;">
+                                            <div flex="9">
+                                                <i class="material-icons" md-colors="{color: 'grey-800'}" style="font-size: 56px;">healing</i>
+                                            </div>
+                                            <div flex layout="row">
+                                                <div flex="65" class="md-title" layout="column">
+                                                    <div md-colors="{color: 'accent-600'}">Solution:</div>
+                                                    <div>{{cause.RemarkSymptomSolution.RemarkSymptomSolutionType.Name}}</div>
+                                                    <div class="md-summary">{{cause.RemarkSymptomSolution.Description}}</div>
+                                                </div>
+                                                <div flex="35" layout="column" class="md-summary">
+                                                    <div flex></div>
+                                                    <div layout="row">
+                                                        <div>Created: </div>
+                                                        <div>
+                                                            {{cause.RemarkSymptomSolution.SolutionDate.toLocaleDateString('nl-BE')}}
+                                                        </div>
+                                                    </div>
+                                                    <div layout="row" ng-if="cause.RemarkSymptomSolution.ComponentAssembly != null">
+                                                        <div>Assembly: </div>
+                                                        <div>
+                                                            {{cause.RemarkSymptomSolution.ComponentAssembly.Name}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </md-expansion-panel-collapsed>
+                                    <md-expansion-panel-expanded>
+                                        <md-expansion-panel-header style="border-bottom: 0px solid !important; border-top: 0px solid !important;">
+                                            <div layout="row" flex>
+                                                <i class="material-icons" md-colors="{color: 'accent-800'}" style="font-size: 48px;">healing</i>
+                                                <h1 md-colors="{color: 'accent-800'}">Solution</h1>
+                                            </div>
+                                        </md-expansion-panel-header>
+                                        <md-expansion-panel-content style="border-bottom: 0px solid !important; border-top: 0px solid !important;">
+                                            <div id="dialogErrorContainer" class="errorContainer md-padding" style="display: none;" layout="row">
+                                                <div flex>
+                                                    <ul>
+                                                        <md-item ng-repeat="error in saveResult">
+                                                            <li>{{error}}</li>
+                                                        </md-item>
+                                                    </ul>
+                                                </div>
+                                                <md-button ng-click="closeErrorContainer()" class="md-icon-button">
+                                                    <ng-md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                                                </md-button>
+                                            </div>
+                                            <div layout="row" flex class="md-padding">
+                                                <div flex></div>
+                                                <md-input-container flex="20" class="md-block" style="margin-top: -10px;">
+                                                    <label style="font-size: 12px;">Solved?</label>
+                                                    <md-switch ng-model="cause.RemarkSymptomSolution.Successful" ng-change="toggleSolutionSuccess($event, cause.RemarkSymptomSolution.Id, cause, symptom)" aria-label="Solved?" style="margin-top: 29px;">
+                                                        {{ cause.RemarkSymptomSolution.Successful }}
+                                                    </md-switch>
+                                                </md-input-container>
+                                                <md-input-container flex="20" class="md-block">
+                                                    <label>Solution type</label>
+                                                    <md-select placeholder="Select solution type" required ng-model="cause.RemarkSymptomSolution.RemarkSymptomSolutionType" ng-model-options="{trackBy: '$value.Id'}" name="RemarkSymptomSolutionType">
+                                                        <md-option ng-value="{{solutionType}}" ng-repeat="solutionType in solutionTypes">{{solutionType.Name}}</md-option>
+                                                    </md-select>
+                                                </md-input-container>
+                                                <md-input-container flex="40" class="md-block">
+                                                    <label>Solution date</label>
+                                                    <md-datepicker ng-model="cause.RemarkSymptomSolution.SolutionDate" required md-placeholder="Enter date" ng-disabled="isEditing"></md-datepicker>
+                                                </md-input-container>
+                                                <div flex></div>
+                                            </div>
+                                            <div layout="row" flex class="md-padding">
+                                                <div flex></div>
+                                                <md-input-container flex="40" class="md-block">
+                                                    <label>Time spent</label>
+                                                    <input type="number" name="costs" min="0" required ng-model="cause.RemarkSymptomSolution.TimeSpent"> hrs
+                                                </md-input-container>
+                                                <md-input-container flex="40" class="md-block">
+                                                    <label>Material cost</label>
+                                                    <input type="number" name="costs" min="0" required ng-model="cause.RemarkSymptomSolution.MaterialCost"> €
+                                                </md-input-container>
+                                                <div flex></div>
+                                            </div>
+                                            <div layout="row" flex class="md-padding">
+                                                <div flex></div>
+                                                <md-input-container flex="80" class="md-block">
+                                                    <label>Component assembly</label>
+                                                    <md-select placeholder="Select component assembly" ng-model="cause.RemarkSymptomSolution.ComponentAssembly" ng-model-options="{trackBy: '$value.Id'}" name="RemarkSymptomCauseType" ng-change="causeComponentAssemblyChanged(cause.RemarkSymptomSolution.ComponentAssembly, cause);">
+                                                        <md-option ng-value="">None</md-option>
+                                                        <md-option ng-value="{{assembly}}" ng-repeat="assembly in symptom.ComponentAssemblies" ng-model="cause.RemarkSymptomSolution.ComponentAssembly">{{assembly.Name}}</md-option>
+                                                    </md-select>
+                                                </md-input-container>
+                                                <div flex></div>
+                                            </div>
+                                            <div layout="row" flex class="md-padding">
+                                                <div flex></div>
+                                                <md-input-container flex="40" class="md-block">
+                                                    <label>Previous component serial</label>
+                                                    <input type="text" ng-readonly="true" ng-disabled="true" name="causePreviousComponentAssembly" ng-model="cause.RemarkSymptomSolution.PreviousComponentSerial">
+                                                </md-input-container>
+                                                <md-input-container flex="40" class="md-block">
+                                                    <label>New component serial</label>
+                                                    <input type="text" name="causeComponentAssembly" ng-model="cause.RemarkSymptomSolution.ComponentSerial">
+                                                </md-input-container>
+                                                <div flex></div>
+                                            </div>
+                                            <div layout="row" flex class="md-padding">
+                                                <div flex></div>
+                                                <md-input-container flex="80" class="md-block">
+                                                    <label>Description</label>
+                                                    <textarea name="solutionDescription" cols="40" rows="3" required md-maxlength="2500" ng-model="cause.RemarkSymptomSolution.Description"></textarea>
+                                                    <div ng-messages="symptomForm.solutionDescription.$error">
+                                                        <div ng-message="required">This is required.</div>
+                                                        <div ng-message="md-maxlength">The description must be less than 2500 characters long.</div>
+                                                    </div>
+                                                </md-input-container>
+                                                <div flex></div>
+                                            </div>
+                                            <div layout="row" flex class="md-padding">
+                                                <div flex></div>
+                                                <md-input-container class="md-block" flex="80" md-theme="docsLight">
+                                                    <lf-ng-md-file-input lf-files="$parent.$parent.solutionImages" accept="image/*" multiple lf-placeholder="Select new solution images"></lf-ng-md-file-input>
+                                                    <div ng-messages="symptomForm.SolutionImage.$error">
+                                                    </div>
+                                                </md-input-container>
+                                                <div flex></div>
+                                            </div>
+                                            <div layout="row" class="md-padding" layout-wrap>
+                                                <div flex></div>
+                                                <div ng-repeat="image in cause.RemarkSymptomSolution.Images" layout="column" flex="80" style="text-align: center;">
+                                                    <md-input-container>
+                                                        <div style="overflow: hidden; height: 100px;">
+                                                            <img src="/Content/Images/Remarks/{{image.ImagePath}}" width="150" ng-click="openSolutionLightboxModal($index)" /><br />
+                                                        </div>
+                                                        <a href="#" ng-click="removeImage(cause.RemarkSymptomSolution, $index)">[ remove image ]</a>
+                                                    </md-input-container>
+                                                    <md-input-container class="md-block">
+                                                        <label>Image description</label>
+                                                        <textarea name="solutionImageDescription_{{$index}}" cols="10" rows="1" required md-maxlength="50" ng-model="image.Description"></textarea>
+                                                        <div ng-messages="symptomForm['solutionImageDescription_' + $index].$error">
+                                                            <div ng-message="md-maxlength">The description must be less than 50 characters long.</div>
+                                                            <div ng-message="required">Please add a description for this image.</div>
+                                                        </div>
+                                                    </md-input-container>
+                                                </div>
+                                                <div flex></div>
+                                            </div>
+                                        </md-expansion-panel-content>
+                                        <div class="md-expansion-panel-footer-container" flex layout="row">
+                                            <button class="md-warn md-button ng-scope md-ink-ripple" type="button" ng-click="$panel.collapse();" aria-label="Collapse">
+                                                <md-tooltip md-direction="top">Click to collapse region</md-tooltip>
+                                                <span class="ng-scope">Collapse</span><div class="md-ripple-container"></div>
+                                            </button>
+                                            <div flex></div>
+                                            <md-button ng-click="deleteSolution($event, cause.RemarkSymptomSolution.Id, cause, symptom)" style="margin-right:20px;">
+                                                <md-tooltip md-direction="top">Delete solution</md-tooltip>
+                                                <ng-md-icon icon="delete" md-colors="{fill: 'grey-800'}" size="48" aria-label="Delete solution"></ng-md-icon>
+                                            </md-button>
+                                        </div>
+                                    </md-expansion-panel-expanded>
+                                </md-expansion-panel>
+                            </md-content>
+                            <div style="border-bottom: 1px solid rgba(0,0,0,0.2);"></div>
+                        </div>
+                    </md-expansion-panel-group>
+                    <md-content>
+                        <div class="remarkFlowCauseElementPlaceholder" ng-click="addCauseToSymptom(symptom.Id)">
+                            <span style="font-size: 3em; border: 0px solid red;"> + click to add a cause</span>
+                        </div>
+                    </md-content>
+                    <md-content>
+                        <md-dialog-actions layout="row">
+                            <div class="md-expansion-panel-footer-container" flex>
+                                <md-tooltip md-direction="top">Click to collapse region</md-tooltip>
+                                <div flex class="ng-scope flex"></div>
+                                <button class="md-warn md-button ng-scope md-ink-ripple" type="button" ng-click="$panel.collapse();" aria-label="Collapse"><span class="ng-scope">Collapse</span><div class="md-ripple-container"></div></button>
+                            </div>
+                            <span flex></span>
+                            <md-button ng-click="$panel.collapse(); answer('cancel'); ">
+                                Cancel
+                            </md-button>
+                            <md-button ng-click="saveRemarks()" style="margin-right:20px;" class="md-raised md-primary" ng-disabled="symptomForm.$invalid || isSaving">
+                                <md-tooltip md-direction="top">Save all remarks, causes and solutions</md-tooltip>
+                                Save
+                            </md-button>
+                        </md-dialog-actions>
+                    </md-content>
+                </md-expansion-panel-content>
+            </md-expansion-panel-expanded>
+        </md-expansion-panel>
+    </form>
+    <script type="text/ng-template" id="symptom-template.html">
+        <md-subheader class="md-warn">Remark symptom</md-subheader>
+    </script>
+    <md-button class="md-fab md-fab-bottom-right docs-scroll-fab md-button md-ink-ripple scrolling" aria-label="New remark" ng-disabled="" ng-click="addRemark($event)" style="position:fixed !important;">
+        <md-tooltip md-direction="top">New remark symptom</md-tooltip>
+        <ng-md-icon icon="add"></ng-md-icon>
+    </md-button>
+</div>
+<script src="~/Scripts/Views/RemarkScripts.js?@DateTime.Now.Ticks.ToString()"></script>

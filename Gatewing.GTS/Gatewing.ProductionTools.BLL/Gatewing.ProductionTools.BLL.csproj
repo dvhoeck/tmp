@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E70BD387-9757-49E8-8FA2-DD7A526963E5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Gatewing.ProductionTools.BLL</RootNamespace>
+    <AssemblyName>Gatewing.ProductionTools.BLL</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseGent|AnyCPU'">
+    <OutputPath>bin\ReleaseGent\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseToulouse|AnyCPU'">
+    <OutputPath>bin\ReleaseToulouse\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_BEG-BNSLN32|AnyCPU'">
+    <OutputPath>bin\Release_BEG-BNSLN32\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Interop.PortableDeviceApiLib">
+      <HintPath>..\resources\Interop.PortableDeviceApiLib.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Device" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DataModel\IRepository.cs" />
+    <Compile Include="DataModel\IUnitOfWork.cs" />
+    <Compile Include="Entities\AccountableDomainObject.cs" />
+    <Compile Include="Entities\ArchivedPublicProductSerial.cs" />
+    <Compile Include="Entities\AssemblyTool.cs" />
+    <Compile Include="Entities\ComponentAssembly.cs" />
+    <Compile Include="Config Entities\AircraftIDConfig.cs" />
+    <Compile Include="Config Entities\BurnInConfig.cs" />
+    <Compile Include="Config Entities\ConfigBase.cs" />
+    <Compile Include="Config Entities\EBoxConfig.cs" />
+    <Compile Include="Config Entities\GBoxControllerConfig.cs" />
+    <Compile Include="Config Entities\GBoxToolingConfig.cs" />
+    <Compile Include="Config Entities\GNSSUptimeCheckerConfig.cs" />
+    <Compile Include="Config Entities\MapHelperConfig.cs" />
+    <Compile Include="Config Entities\ModemConfig.cs" />
+    <Compile Include="Config Entities\TFMConfig.cs" />
+    <Compile Include="Constants\Constants.cs" />
+    <Compile Include="ConversionHelper.cs" />
+    <Compile Include="Entities\DomainObject.cs" />
+    <Compile Include="Entities\EntityChange.cs" />
+    <Compile Include="Entities\GTSWorkInstruction.cs" />
+    <Compile Include="Entities\Note.cs" />
+    <Compile Include="Entities\ObjectArchivable.cs" />
+    <Compile Include="Entities\ObjectWithLifespanAndIndex.cs" />
+    <Compile Include="Entities\ObjectWithSequenceNumber.cs" />
+    <Compile Include="Entities\PartNumber.cs" />
+    <Compile Include="Entities\PasswordHelper.cs" />
+    <Compile Include="Entities\ProductModelConfiguration.cs" />
+    <Compile Include="Entities\RemarkImage.cs" />
+    <Compile Include="Entities\RemarkSymptomSolutionType.cs" />
+    <Compile Include="Entities\RemoteDevice.cs" />
+    <Compile Include="Entities\Report.cs" />
+    <Compile Include="Entities\SageShippingEntities.cs" />
+    <Compile Include="Enums\Enums.cs" />
+    <Compile Include="Events\DeviceManipulatedEventUtils.cs" />
+    <Compile Include="LocationHelper.cs" />
+    <Compile Include="Entities\ProductModelState.cs" />
+    <Compile Include="Entities\ProductAssembly.cs" />
+    <Compile Include="Entities\ProductComponent.cs" />
+    <Compile Include="Entities\ProductModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Entities\RemarkSymptom.cs" />
+    <Compile Include="Entities\RemarkSymptomCause.cs" />
+    <Compile Include="Entities\RemarkSymptomType.cs" />
+    <Compile Include="Entities\RemarkSymptomSolution.cs" />
+    <Compile Include="Entities\RemarkSymptomCauseType.cs" />
+    <Compile Include="ValidationResultWithSeverity.cs" />
+    <Compile Include="ValidationRuleBases.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="WGTS.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Structs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="PortableDeviceTypesLib">
+      <Guid>{2B00BA2F-E750-4BEB-9235-97142EDE1D3E}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Gatewing.ProductionTools.ExtensionMethods\Gatewing.ProductionTools.ExtensionMethods.csproj">
+      <Project>{3e72c762-1576-45b8-a779-0e21ad9a62d3}</Project>
+      <Name>Gatewing.ProductionTools.ExtensionMethods</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Gatewing.ProductionTools.Logging\Gatewing.ProductionTools.Logging.csproj">
+      <Project>{5d78480f-e337-4bff-b340-fcb30169dbec}</Project>
+      <Name>Gatewing.ProductionTools.Logging</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,307 @@
+﻿@{
+    ViewBag.Title = "Reports";
+}
+
+<style>
+    td {
+        font-size: 0.8em;
+    }
+
+    table {
+        max-width: 200% !important;
+    }
+</style>
+<div ng-controller="ReportCtrl" ng-app="GTS" layout="column" data-ng-init="setContentWidth(95); init();" class="md-inline-form" ng-form="reportForm">
+    <md-content>
+        <md-card>
+            <loading></loading>
+            <md-tabs md-dynamic-height md-border-bottom md-selected="selectedIndex">
+                <md-tab md-on-select="tabChange(selectedIndex)">
+                    <md-tab-label layout="row">
+                        <md-icon md-font-set="fa fa-fw fa-wrench md-avatar" class="md-toggle-icon"></md-icon>
+                        <span>Products</span>
+                    </md-tab-label>
+                    <md-tab-body layout="column" layout-align="center center">
+                        <div layout="column" layout-align="center start" layout-padding>
+                            <div layout="row" layout-align="start center" layout-padding ng-hide="!dataLoaded">
+                                <md-input-container class="md-block">
+                                    <label>Model</label>
+                                    <md-select ng-model="selectedModel" ng-change="selectedModelChange(selectedModel)">
+                                        <md-option><em>None</em></md-option>
+                                        <md-option name="modelSelection" ng-repeat="model in filterData.Models" ng-value="model">{{model.Name}}</md-option>
+                                    </md-select>
+                                    <div class="md-errors-spacer"></div>
+                                </md-input-container>
+                                <md-input-container class="md-block">
+                                    <label>Version</label>
+                                    <md-select ng-model="selectedVersion" ng-change="selectedVersionChange(selectedVersion)">
+                                        <md-option><em>All</em></md-option>
+                                        <md-option ng-repeat="version in ModelVersions | orderBy: 'VersionNr'" ng-value="version">{{version.VersionNr}}</md-option>
+                                    </md-select>
+                                    <div class="md-errors-spacer"></div>
+                                </md-input-container>
+                                <md-input-container class="md-block">
+                                    <label>Component</label>
+                                    <md-select ng-model="selectedComponent" ng-change="selectedComponentChange(selectedComponent)">
+                                        <md-option><em>None</em></md-option>
+                                        <md-option ng-repeat="component in ProductComponents | orderBy: 'SequenceOrder'" ng-value="component">{{component.Name}}</md-option>
+                                    </md-select>
+                                    <div class="md-errors-spacer"></div>
+                                </md-input-container>
+                                <span>/</span>
+                                <md-input-container flex class="md-block">
+                                    <label>Component name (free input)</label>
+                                    <input md-maxlength="250" name="ComponentNameFreeEntry" ng-model="componentNameFreeEntry" ng-change="componentNameFreeEntryChanged(componentNameFreeEntry)">
+                                </md-input-container>
+                                <md-input-container flex class="md-block">
+                                    <label>Component value</label>
+                                    <input md-maxlength="250" name="FilterSerial" ng-model="componentValue" ng-disabled="selectedComponent == null && componentNameFreeEntry  == ''">
+                                </md-input-container>
+                            </div>
+                            <div layout="row" layout-align="center center" layout-padding ng-hide="!dataLoaded">
+                                <md-input-container class="md-block">
+                                    <label>Serial</label>
+                                    <input md-maxlength="64" name="FilterSerial" ng-model="filterSerial">
+                                </md-input-container>
+                                <md-input-container class="md-block">
+                                    <label>Start date</label>
+                                    <md-datepicker ng-model="filterData.StartDate" md-placeholder="Enter start date"></md-datepicker>
+                                </md-input-container>
+                                <md-input-container class="md-block">
+                                    <label>End date</label>
+                                    <md-datepicker ng-model="filterData.EndDate" md-placeholder="Enter end date"></md-datepicker>
+                                </md-input-container>
+                                <div flex></div>
+                                <md-input-container class="md-block" layout="row">
+                                    <md-button class="md-raised md-primary" aria-label="Refresh" ng-click="refreshData(0);" ng-disabled="!dataLoaded">
+                                        <div layout="row" layout-align="center center">
+                                            <i class="material-icons">cached</i>
+                                            <div>
+                                                &nbsp;Retrieve data
+                                            </div>
+                                        </div>
+                                    </md-button>
+                                    <md-button class="md-raised md-primary" aria-label="Export" ng-disabled="!dataLoaded" ng-click="exportToExcel(0)">
+                                        <div layout="row" layout-align="center center">
+                                            <i class="material-icons">assignment_returned</i>
+                                            <div>
+                                                &nbsp;Export report
+                                            </div>
+                                        </div>
+                                    </md-button>
+                                    <div class="md-errors-spacer"></div>
+                                </md-input-container>
+                                <div flex></div>
+                            </div>
+                            <div layout="row" layout-align="center center">
+                                <note flex msg="'This report allows you to use wildcards (* symbol). To be able to search on component value, either select a component or enter a component name manually.'"></note>
+                            </div>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+
+                @*USED IN ASSEMBLIES TAB*@
+                <md-tab md-on-select="tabChange(selectedIndex)">
+                    <md-tab-label layout="row">
+                        <md-icon md-font-set="fa fa-fw fa-search-location md-avatar" class="md-toggle-icon"></md-icon>
+                        <span>Serial Lookup</span>
+                    </md-tab-label>
+                    <md-tab-body layout="column" layout-align="center center">
+                        <div layout="row" layout-align="center center" layout-padding ng-hide="!dataLoaded">
+                            <div flex></div>
+                            <md-input-container class="md-block">
+                                <label>Serial</label>
+                                <input md-maxlength="64" name="FilterSerial" ng-model="filterSerialUsage">
+                            </md-input-container>
+
+                            <md-input-container class="md-block" layout="row">
+                                <md-button class="md-raised md-primary" aria-label="Refresh" ng-click="refreshData(1);" ng-disabled="!dataLoaded">
+                                    <div layout="row" layout-align="center center">
+                                        <i class="material-icons">cached</i>
+                                        <div>
+                                            &nbsp;Retrieve data
+                                        </div>
+                                    </div>
+                                </md-button>
+                                <md-button class="md-raised md-primary" aria-label="Export" ng-disabled="!dataLoaded" ng-click="exportToExcel(1)">
+                                    <div layout="row" layout-align="center center">
+                                        <i class="material-icons">assignment_returned</i>
+                                        <div>
+                                            &nbsp;Export report
+                                        </div>
+                                    </div>
+                                </md-button>
+                            </md-input-container>
+
+                            <div flex></div>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+
+                @*REMARK TAB*@
+                <md-tab md-on-select="tabChange(selectedIndex)" layout-padding>
+                    <md-tab-label layout="row">
+                        <md-icon md-font-set="fa fa-fw fa-microscope md-avatar" class="md-toggle-icon"></md-icon>
+                        <span>Remarks</span>
+                    </md-tab-label>
+                    <md-tab-body layout="column" layout-align="center center">
+                        <div layout="row" layout-align="start center" ng-hide="!dataLoaded" layout-padding>
+                            <div flex></div>
+                            <md-input-container class="md-block">
+                                <md-switch ng-model="onlyOpenRemarks">Show only open remarks</md-switch>
+                                <div class="md-errors-spacer"></div>
+                            </md-input-container>
+                            <md-input-container class="md-block">
+                                <label>Start date</label>
+                                <md-datepicker ng-model="filterData.StartDate" md-placeholder="Enter start date"></md-datepicker>
+                            </md-input-container>
+                            <md-input-container class="md-block">
+                                <label>End date</label>
+                                <md-datepicker ng-model="filterData.EndDate" md-placeholder="Enter end date"></md-datepicker>
+                            </md-input-container>
+                            <md-input-container class="md-block" layout="row">
+                                <md-button class="md-raised md-primary" aria-label="Refresh" ng-click="refreshData(2);" ng-disabled="!dataLoaded">
+                                    <div layout="row" layout-align="center center">
+                                        <i class="material-icons">cached</i>
+                                        <div>
+                                            &nbsp;Retrieve data
+                                        </div>
+                                    </div>
+                                </md-button>
+                                <md-button class="md-raised md-primary" aria-label="Export" ng-disabled="!dataLoaded" ng-click="exportToExcel(2)">
+                                    <div layout="row" layout-align="center center">
+                                        <i class="material-icons">assignment_returned</i>
+                                        <div>
+                                            &nbsp;Export report
+                                        </div>
+                                    </div>
+                                </md-button>
+                            </md-input-container>
+                            <div flex></div>
+                        </div>
+                    </md-tab-body>
+                </md-tab>
+            </md-tabs>
+        </md-card>
+        <div>
+            <md-content layout="row">
+                <div layout="column" layout-align="start center" ng-if="selectedIndex == 0">
+                    <h3 class="md-display-2" ng-if="assemblies && assemblies.length > 1">{{assemblies ? assemblies.length: "0"}} assemblies returned</h3>
+                    <table cellspacing="5" id="tblSerialLookup">
+                        <tr>
+                            <th class="report" md-truncate>Started</th>
+                            <th class="report" md-truncate>Updated</th>
+                            <th class="report" md-truncate>Name</th>
+                            <th class="report" md-truncate>Serial</th>
+                            <th class="report" md-truncate>Public serial</th>
+                            <th class="report" md-truncate>Configurations</th>
+                            <th class="report" md-truncate>Model type</th>
+                            <th class="report" md-truncate>Version</th>
+                            <th class="report" md-truncate>State</th>
+                            <th class="report" md-truncate>Progress</th>
+                            <th class="report" md-truncate>Evaluation</th>
+                            <th class="report" md-truncate ng-if="componentValue">Component</th>
+                            <th class="report" md-truncate ng-if="componentValue">Component revision</th>
+                            <th class="report" md-truncate ng-if="componentValue">Component serial</th>
+                            <th class="report" md-truncate ng-if="componentValue">Component change date</th>
+                        </tr>
+                        <tr ng-repeat="assembly in assemblies track by $index">
+                            <td>{{assembly.StartDate.replace("T"," ")}}</td>
+                            <td>{{assembly.LastUpdate ? assembly.LastUpdate.replace("T"," "): "unknown"}}</td>
+                            <td>{{assembly.Name}}</td>
+                            <td>{{assembly.ProductSerial}}</td>
+                            <td>{{assembly.PublicProductSerial}}</td>
+                            <td>{{assembly.Configurations}}</td>
+                            <td>{{assembly.ModelType}}</td>
+                            <td>{{assembly.ModelVersion}}</td>
+                            <td>{{assembly.State}}</td>
+                            <td>{{assembly.Progress}}%</td>
+                            <td>{{assembly.FinalState}}</td>
+                            <td ng-if="componentValue">{{assembly.ComponentName}}</td>
+                            <td ng-if="componentValue">{{assembly.ComponentDataRevision}}</td>
+                            <td ng-if="componentValue">{{assembly.ComponentDataSerial}}</td>
+                            <td ng-if="componentValue">{{assembly.ComponentChangeDate}}</td>
+                        </tr>
+                        <tr ng-if="assemblies == null || assemblies.length == 0">
+                            <td colspan="8"><br /><em>* No results found, try changing your search parameters *</em></td>
+                        </tr>
+                    </table>
+                </div>
+                <div layout="column" layout-align="start center" ng-if="selectedIndex == 1">
+                    <h3 class="md-display-2" ng-if="assembliesContainingSerial && assembliesContainingSerial.length > 1">{{assembliesContainingSerial ? assembliesContainingSerial.length: "0"}} assemblies returned</h3>
+                    <table cellspacing="5" id="tblSerialUsageLookup">
+                        <tr>
+                            <th class="report" md-truncate>Name</th>
+                            <th class="report" md-truncate>Serial</th>
+                            <th class="report" md-truncate>Public Serial</th>
+                            <th class="report" md-truncate>Version</th>
+                            <th class="report" md-truncate>State</th>
+                            <th class="report" md-truncate>Component name</th>
+                            <th class="report" md-truncate>Component serial</th>
+                            <th class="report" md-truncate>Component version</th>
+                        </tr>
+                        <tr ng-repeat="assembly in assembliesContainingSerial track by $index">
+                            <td>{{assembly.Name}}</td>
+                            <td>{{assembly.Serial}}</td>
+                            <td>{{assembly.PublicSerial}}</td>
+                            <td>{{assembly.Version}}</td>
+                            <td>{{assembly.State}}</td>
+                            <td>{{assembly.ComponentName}}</td>
+                            <td>{{assembly.ComponentSerial}}</td>
+                            <td>{{assembly.ComponentVersion}}</td>
+                        </tr>
+                        <tr ng-if="assembliesContainingSerial == null || assembliesContainingSerial.length == 0">
+                            <td colspan="8"><br /><em>* No results found, try changing your search parameters *</em></td>
+                        </tr>
+                    </table>
+                </div>
+                <div layout="column" layout-align="center center" ng-if="selectedIndex == 2">
+                    <h3 class="md-display-2" ng-if="remarkBetweenDates && remarkBetweenDates.length > 1">{{remarkBetweenDates ? remarkBetweenDates.length: "0"}} remarks returned</h3>
+                    <table cellspacing="5" id="tblRemarksBetweenDates">
+                        <tr>
+                            <th class="report">Name</th>
+                            <th class="report">Product serial</th>
+                            <th class="report">Product type</th>
+                            <th class="report">Product configurations</th>
+                            <th class="report">Remark date</th>
+                            <th class="report">Remark opened by</th>
+                            <th class="report">Description</th>
+                            <th class="report">Cause</th>
+                            <th class="report">Cause description</th>
+                            <th class="report">Cause date</th>
+                            <th class="report">Solution</th>
+                            <th class="report">Cost (€)</th>
+                            <th class="report">Resolved?</th>
+                            <th class="report">Resolved by</th>
+                            <th class="report">Resolution date</th>
+                            <th class="report">Is Archived?</th>
+                        </tr>
+                        <tr ng-repeat="remark in remarkBetweenDates track by $index">
+                            <td>{{remark.Name}}</td>
+                            <td>{{remark.ProductSerial}}</td>
+                            <td>{{remark.TypeOfProduct}}</td>
+                            <td>{{remark.Configurations}}</td>
+                            <td>{{remark.CreationDate}}</td>
+                            <td>{{remark.EditedBy}}%</td>
+                            <td>{{remark.Description}}</td>
+                            <td>{{remark.Cause}}</td>
+                            <td>{{remark.CauseDescription}}</td>
+                            <td>{{remark.CauseDate}}</td>
+                            <td>{{remark.Solution}}</td>
+                            <td>{{remark.Costs}}</td>
+                            <td>{{remark.Resolved}}</td>
+                            <td>{{remark.ResolvedBy}}</td>
+                            <td>{{remark.ResolutionDate}}</td>
+                            <td>{{remark.IsArchived}}</td>
+                        </tr>
+                        <tr ng-if="remarkBetweenDates == null || remarkBetweenDates.length == 0">
+                            <td colspan="8"><br /><em>* No results found, try changing your search parameters *</em></td>
+                        </tr>
+                    </table>
+                </div>
+            </md-content>
+        </div>
+    </md-content>
+</div>
+
+<script src="~/Scripts/Views/ReportScripts.js?@DateTime.Now.Ticks.ToString()"></script>

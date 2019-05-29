@@ -1,0 +1,154 @@
+﻿@{
+    ViewBag.Title = "Product remarks";
+}
+<div ng-controller="RemarkCtrl" data-ng-init="initRemarkHistory()">
+
+    <script src="~/Scripts/expansionPanel.directive.js"></script>
+    <script src="~/Scripts/expansionPanel.service.js"></script>
+    <div flex>
+        <h1 class="md-flex" md-colors="{color: 'accent-800'}">Remarks for assembly:<br /> <a href="/Products/Assembly/{{ProductAssemblyId}}">{{AssemblyName}}</a></h1>
+    </div>
+
+    <div flex layout="column">
+        <h2>Statistics</h2>
+        <div layout="row">
+            <md-list flex style="border: 0px solid red;">
+                <md-list-item class="md-2-line" layout="row" layout-wrap="" style="float: left; width: 25%; box-sizing: border-box;">
+                    <div class="md-item-text md-whiteframe-z3" flex style="padding: 0px 8px;">
+                        <h3>Nr of remarks</h3>
+                        <p>{{stats.RemarkCount}}</p>
+                    </div>
+                </md-list-item>
+                <md-list-item class="md-2-line" layout="row" layout-wrap="" style="float: left; width: 25%; box-sizing: border-box;">
+                    <div class="md-item-text md-whiteframe-z3" flex style="padding: 0px 8px;">
+                        <h3>Archived remarks</h3>
+                        <p>{{stats.ArchivedRemarkCount}}</p>
+                    </div>
+                </md-list-item>
+                <md-list-item class="md-2-line" layout="row" layout-wrap="" style="float: left; width: 25%; box-sizing: border-box;">
+                    <div class="md-item-text md-whiteframe-z3" flex style="padding: 0px 8px;">
+                        <h3>Total cost</h3>
+                        <p>{{stats.TotalCost}}</p>
+                    </div>
+                </md-list-item>
+                <md-list-item class="md-2-line" layout="row" layout-wrap="" style="float: left; width: 25%; box-sizing: border-box;">
+                    <div class="md-item-text md-whiteframe-z3" flex style="padding: 0px 8px;">
+                        <h3>Time spent</h3>
+                        <p>{{stats.TotalTime}}</p>
+                    </div>
+                </md-list-item>
+            </md-list>
+        </div>
+    </div>
+
+    <div ng-repeat="symptom in remarkSymptoms" style="margin-top: 50px; padding-bottom: 20px; border-bottom: 1px solid #999;">
+        <div layout="row">
+            <div style="width: 65px;">
+                <ng-md-icon icon="do_not_disturb_on" size="48" md-colors="{fill: 'grey-800'}"></ng-md-icon>
+            </div>
+            <div flex>
+                <h3 class="md-headline" md-colors="{color: 'accent'}">Remark {{symptom.IsArchived ? "(archived)": ""}}</h3>
+                <p>{{symptom.Description}}</p>
+                <div flex layout="row">
+                    <div layout="column" flex="25">
+                        <div class="md-title">{{symptom.CreationDateAsString}}</div>
+                        <div class="md-summary">Created date</div>
+                    </div>
+                    <div layout="column" flex="25">
+                        <div class="md-title">{{symptom.Resolved}}</div>
+                        <div class="md-summary">Resolved</div>
+                    </div>
+                    <div layout="column" flex="25">
+                        <div class="md-title">{{symptom.RemarkSymptomType.Name}}</div>
+                        <div class="md-summary">Type</div>
+                    </div>
+                    <div layout="column" flex="25">
+                        <div class="md-title">{{symptom.ResolutionDateAsString}}</div>
+                        <div class="md-summary">Resolution date</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div ng-repeat="cause in symptom.RemarkSymptomCauses" style="margin-top: 50px;" flex layout="column">
+            <div layout="row">
+                <div style="width: 50px;"></div>
+                <div>
+                    <ng-md-icon icon="find_in_page" size="48" md-colors="{fill: 'grey-800'}"></ng-md-icon>
+                </div>
+                <div layout="column" flex>
+                    <h3 class="md-headline" md-colors="{color: 'accent-600'}">Cause {{cause.IsArchived ? "(archived)": ""}}</h3>
+                    <p>{{cause.Description}}</p>
+
+                    <div layout="row">
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.CauseType.Name}}</div>
+                            <div class="md-summary">Cause type</div>
+                        </div>
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.CauseDateAsString}}</div>
+                            <div class="md-summary">Cause date</div>
+                        </div>
+                        <div layout="column" flex="50">
+                            <div class="md-title">{{cause.ComponentAssembly == null ? "None set" : cause.ComponentAssembly.ComponentName}}</div>
+                            <div class="md-summary">Component assembly</div>
+                        </div>
+                    </div>
+                    <div layout="row" style="margin-top: 10px;">
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.MaterialCost}}</div>
+                            <div class="md-summary">Material cost</div>
+                        </div>
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.TimeSpent}}</div>
+                            <div class="md-summary">Time spent</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div layout="row" style="margin-top: 50px;" ng-if="cause.RemarkSymptomSolution != null">
+                <div style="width: 50px;"></div>
+                <div>
+                    <ng-md-icon icon="healing" size="48" md-colors="{fill: 'grey-800'}"></ng-md-icon>
+                </div>
+                <div layout="column" flex>
+                    <h3 class="md-headline" md-colors="{color: 'accent-800'}">Solution {{cause.RemarkSymptomSolution.IsArchived ? "(archived)": ""}}</h3>
+                    <p>{{cause.RemarkSymptomSolution.Description}}</p>
+                    <div layout="row">
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.RemarkSymptomSolution.RemarkSymptomSolutionType.Name}}</div>
+                            <div class="md-summary">Solution type</div>
+                        </div>
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.RemarkSymptomSolution.SolutionDateAsString}}</div>
+                            <div class="md-summary">Resolution date</div>
+                        </div>
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.RemarkSymptomSolution.TimeSpent}}</div>
+                            <div class="md-summary">Time spent</div>
+                        </div>
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.RemarkSymptomSolution.MaterialCost}}</div>
+                            <div class="md-summary">Material cost</div>
+                        </div>
+                    </div>
+                    <div layout="row" style="margin-top: 10px;">
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.RemarkSymptomSolution.PreviousComponentSerial == null ? "None set": cause.RemarkSymptomSolution.PreviousComponentSerial}}</div>
+                            <div class="md-summary">Replaced component serial</div>
+                        </div>
+                        <div layout="column" flex="25">
+                            <div class="md-title">{{cause.RemarkSymptomSolution.ComponentSerial == null ? "None set": cause.RemarkSymptomSolution.ComponentSerial}}</div>
+                            <div class="md-summary">Replacement component serial</div>
+                        </div>
+                        <div layout="column" flex="75">
+                            <div class="md-title">{{cause.RemarkSymptomSolution.ComponentAssembly == null ? "None set" : cause.RemarkSymptomSolution.ComponentAssembly.ComponentName}}</div>
+                            <div class="md-summary">Component assembly</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/Views/RemarkScripts.js?@DateTime.Now.Ticks.ToString()"></script>
